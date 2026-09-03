@@ -1,0 +1,310 @@
+model AgentRun {
+  id             String   @id @default(uuid())
+  chatId         String
+  userId         String
+  messageId      String
+  
+  status         RunStatus
+  
+  modelRequested String?
+  modelActual    String?
+  
+  triggerTaskId  String?
+  
+  startedAt      DateTime?
+  completedAt    DateTime?
+  
+  errorCode      String?
+  errorMessage   String?
+  
+  promptTokens     Int?
+  completionTokens Int?
+  totalTokens      Int?
+  
+  metadata       Json?
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime 
+
+  chat    Chat    @relation(fields: [chatId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+  message Message @relation(fields: [messageId], references: [id])
+
+  toolInvocations ToolInvocation[]
+  runSkills       RunSkill[]
+  waitpoints      Waitpoint[]
+  creditLedgers   CreditLedger[]
+}
+
+
+model Attachment {
+  id                    String   @id @default(uuid())
+  userId                String
+  chatId                String
+  messageId             String?
+  
+  originalName          String
+  mimeType              String
+  sizeBytes             Int
+  
+  status                AttachmentStatus
+  
+  transloaditAssemblyId String?
+  
+  storageProvider       String?
+  storageKey            String?
+  resultUrl             String?
+  
+  metadata              Json?
+  
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime 
+
+  user    User     @relation(fields: [userId], references: [id])
+  chat    Chat     @relation(fields: [chatId], references: [id])
+  message Message? @relation(fields: [messageId], references: [id])
+}
+
+
+model Chat {
+  id        String   @id @default(uuid())
+  userId    String
+  title     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime 
+
+  user User @relation(fields: [userId], references: [id])
+
+  messages        Message[]
+  agentRuns       AgentRun[]
+  attachments     Attachment[]
+  generatedAssets GeneratedAsset[]
+  toolInvocations ToolInvocation[]
+
+  @@index([userId, createdAt, id])
+}
+
+
+model CreditLedger {
+  id               String   @id @default(uuid())
+  userId           String
+  
+  agentRunId       String?
+  toolInvocationId String?
+  
+  type             LedgerTransactionType
+  amount           Int
+  
+  idempotencyKey   String? @unique
+  
+  createdAt        DateTime @default(now())
+
+  user           User            @relation(fields: [userId], references: [id])
+  agentRun       AgentRun?       @relation(fields: [agentRunId], references: [id])
+  toolInvocation ToolInvocation? @relation(fields: [toolInvocationId], references: [id])
+}
+
+
+enum MessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+  TOOL
+}
+
+enum MessageStatus {
+  PENDING
+  STREAMING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum RunStatus {
+  QUEUED
+  RUNNING
+  WAITING
+  STOPPING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum ToolStatus {
+  QUEUED
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum WaitpointStatus {
+  PENDING
+  RESUMED
+  EXPIRED
+  CANCELLED
+}
+
+enum AttachmentStatus {
+  PENDING
+  UPLOADING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+  EXPIRED
+}
+
+enum GeneratedAssetType {
+  IMAGE
+  VIDEO
+  AUDIO
+}
+
+enum LedgerTransactionType {
+  RESERVATION
+  RELEASE
+  CHARGE
+  REFUND
+  ADJUSTMENT
+}
+
+
+model GeneratedAsset {
+  id               String   @id @default(uuid())
+  userId           String
+  chatId           String
+  messageId        String?
+  toolInvocationId String?
+  
+  type             GeneratedAssetType
+  
+  sourceUrl        String?
+  storageProvider  String?
+  storageKey       String?
+  
+  mimeType         String?
+  sizeBytes        Int?
+  
+  metadata         Json?
+  
+  createdAt        DateTime @default(now())
+
+  user           User            @relation(fields: [userId], references: [id])
+  chat           Chat            @relation(fields: [chatId], references: [id])
+  message        Message?        @relation(fields: [messageId], references: [id])
+  toolInvocation ToolInvocation? @relation(fields: [toolInvocationId], references: [id])
+}
+
+
+model Message {
+  id        String   @id @default(uuid())
+  chatId    String
+  userId    String
+  role      MessageRole
+  status    MessageStatus
+
+  content   Json
+  metadata  Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime 
+
+  chat Chat @relation(fields: [chatId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+
+  attachments     Attachment[]
+  generatedAssets GeneratedAsset[]
+  agentRuns       AgentRun[]
+  toolInvocations ToolInvocation[]
+}
+
+
+model RunSkill {
+  id          String   @id @default(uuid())
+  agentRunId  String
+  
+  skillName   String
+  contentHash String
+  
+  loadedAt    DateTime @default(now())
+
+  agentRun AgentRun @relation(fields: [agentRunId], references: [id])
+
+  @@unique([agentRunId, skillName])
+}
+
+
+model ToolInvocation {
+  id            String   @id @default(uuid())
+  agentRunId    String
+  chatId        String
+  messageId     String
+  
+  toolName      String
+  status        ToolStatus
+  
+  input         Json?
+  output        Json?
+  
+  provider      String?
+  providerRunId String?
+  
+  durationMs    Int?
+  
+  estimatedCredits Int?
+  actualCredits    Int?
+  
+  errorCode     String?
+  errorMessage  String?
+  
+  idempotencyKey String? @unique
+  
+  startedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime @default(now())
+
+  agentRun AgentRun @relation(fields: [agentRunId], references: [id])
+  chat     Chat     @relation(fields: [chatId], references: [id])
+  message  Message  @relation(fields: [messageId], references: [id])
+  
+  generatedAssets GeneratedAsset[]
+  creditLedgers   CreditLedger[]
+}
+
+
+model User {
+  id        String   @id @default(uuid())
+  clerkId   String   @unique
+  name      String?
+  email     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime 
+
+  chats           Chat[]
+  messages        Message[]
+  agentRuns       AgentRun[]
+  attachments     Attachment[]
+  generatedAssets GeneratedAsset[]
+  creditLedgers   CreditLedger[]
+}
+
+
+model Waitpoint {
+  id         String   @id @default(uuid())
+  agentRunId String
+  
+  token      String   @unique
+  type       String
+  status     WaitpointStatus
+  
+  input      Json?
+  response   Json?
+  
+  resumedAt  DateTime?
+  
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime 
+
+  agentRun AgentRun @relation(fields: [agentRunId], references: [id])
+}

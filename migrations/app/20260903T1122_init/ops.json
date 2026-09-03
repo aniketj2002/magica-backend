@@ -1,0 +1,2359 @@
+[
+  {
+    "id": "schema.public",
+    "label": "Create schema \"public\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres"
+    },
+    "precheck": [],
+    "execute": [
+      {
+        "description": "Create schema \"public\"",
+        "sql": "CREATE SCHEMA IF NOT EXISTS \"public\"",
+        "params": []
+      }
+    ],
+    "postcheck": []
+  },
+  {
+    "id": "table.agentRun",
+    "label": "Create table \"agentRun\"",
+    "summary": "Creates table \"agentRun\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "agentRun"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"agentRun\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"agentRun\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"agentRun\"",
+        "sql": "CREATE TABLE \"public\".\"agentRun\" (\n  \"chatId\" text NOT NULL,\n  \"completedAt\" timestamptz,\n  \"completionTokens\" int4,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"errorCode\" text,\n  \"errorMessage\" text,\n  \"id\" text NOT NULL,\n  \"messageId\" text NOT NULL,\n  \"metadata\" json,\n  \"modelActual\" text,\n  \"modelRequested\" text,\n  \"promptTokens\" int4,\n  \"startedAt\" timestamptz,\n  \"status\" text NOT NULL,\n  \"totalTokens\" int4,\n  \"triggerTaskId\" text,\n  \"updatedAt\" timestamptz NOT NULL,\n  \"userId\" text NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"agentRun_status_check_e2d659f6\" CHECK (\"status\" IN ('QUEUED', 'RUNNING', 'WAITING', 'STOPPING', 'COMPLETED', 'FAILED', 'CANCELLED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"agentRun\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"agentRun\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.attachment",
+    "label": "Create table \"attachment\"",
+    "summary": "Creates table \"attachment\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "attachment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"attachment\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"attachment\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"attachment\"",
+        "sql": "CREATE TABLE \"public\".\"attachment\" (\n  \"chatId\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" text NOT NULL,\n  \"messageId\" text,\n  \"metadata\" json,\n  \"mimeType\" text NOT NULL,\n  \"originalName\" text NOT NULL,\n  \"resultUrl\" text,\n  \"sizeBytes\" int4 NOT NULL,\n  \"status\" text NOT NULL,\n  \"storageKey\" text,\n  \"storageProvider\" text,\n  \"transloaditAssemblyId\" text,\n  \"updatedAt\" timestamptz NOT NULL,\n  \"userId\" text NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"attachment_status_check_c1fe55c3\" CHECK (\"status\" IN ('PENDING', 'UPLOADING', 'PROCESSING', 'COMPLETED', 'FAILED', 'CANCELLED', 'EXPIRED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"attachment\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"attachment\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.chat",
+    "label": "Create table \"chat\"",
+    "summary": "Creates table \"chat\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "chat"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"chat\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"chat\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"chat\"",
+        "sql": "CREATE TABLE \"public\".\"chat\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" text NOT NULL,\n  \"title\" text,\n  \"updatedAt\" timestamptz NOT NULL,\n  \"userId\" text NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"chat\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"chat\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.creditLedger",
+    "label": "Create table \"creditLedger\"",
+    "summary": "Creates table \"creditLedger\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "creditLedger"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"creditLedger\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"creditLedger\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"creditLedger\"",
+        "sql": "CREATE TABLE \"public\".\"creditLedger\" (\n  \"agentRunId\" text,\n  \"amount\" int4 NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" text NOT NULL,\n  \"idempotencyKey\" text,\n  \"toolInvocationId\" text,\n  \"type\" text NOT NULL,\n  \"userId\" text NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"creditLedger_type_check_0e255e2a\" CHECK (\"type\" IN ('RESERVATION', 'RELEASE', 'CHARGE', 'REFUND', 'ADJUSTMENT'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"creditLedger\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"creditLedger\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.generatedAsset",
+    "label": "Create table \"generatedAsset\"",
+    "summary": "Creates table \"generatedAsset\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "generatedAsset"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"generatedAsset\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"generatedAsset\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"generatedAsset\"",
+        "sql": "CREATE TABLE \"public\".\"generatedAsset\" (\n  \"chatId\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" text NOT NULL,\n  \"messageId\" text,\n  \"metadata\" json,\n  \"mimeType\" text,\n  \"sizeBytes\" int4,\n  \"sourceUrl\" text,\n  \"storageKey\" text,\n  \"storageProvider\" text,\n  \"toolInvocationId\" text,\n  \"type\" text NOT NULL,\n  \"userId\" text NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"generatedAsset_type_check_840b43a3\" CHECK (\"type\" IN ('IMAGE', 'VIDEO', 'AUDIO'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"generatedAsset\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"generatedAsset\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.message",
+    "label": "Create table \"message\"",
+    "summary": "Creates table \"message\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "message"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"message\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"message\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"message\"",
+        "sql": "CREATE TABLE \"public\".\"message\" (\n  \"chatId\" text NOT NULL,\n  \"content\" json NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" text NOT NULL,\n  \"metadata\" json,\n  \"role\" text NOT NULL,\n  \"status\" text NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  \"userId\" text NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"message_role_check_6368b6bd\" CHECK (\"role\" IN ('USER', 'ASSISTANT', 'SYSTEM', 'TOOL')),\n  CONSTRAINT \"message_status_check_8fcf3117\" CHECK (\"status\" IN ('PENDING', 'STREAMING', 'COMPLETED', 'FAILED', 'CANCELLED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"message\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"message\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.runSkill",
+    "label": "Create table \"runSkill\"",
+    "summary": "Creates table \"runSkill\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "runSkill"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"runSkill\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"runSkill\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"runSkill\"",
+        "sql": "CREATE TABLE \"public\".\"runSkill\" (\n  \"agentRunId\" text NOT NULL,\n  \"contentHash\" text NOT NULL,\n  \"id\" text NOT NULL,\n  \"loadedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"skillName\" text NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"runSkill\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"runSkill\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.toolInvocation",
+    "label": "Create table \"toolInvocation\"",
+    "summary": "Creates table \"toolInvocation\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "toolInvocation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"toolInvocation\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"toolInvocation\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"toolInvocation\"",
+        "sql": "CREATE TABLE \"public\".\"toolInvocation\" (\n  \"actualCredits\" int4,\n  \"agentRunId\" text NOT NULL,\n  \"chatId\" text NOT NULL,\n  \"completedAt\" timestamptz,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"durationMs\" int4,\n  \"errorCode\" text,\n  \"errorMessage\" text,\n  \"estimatedCredits\" int4,\n  \"id\" text NOT NULL,\n  \"idempotencyKey\" text,\n  \"input\" json,\n  \"messageId\" text NOT NULL,\n  \"output\" json,\n  \"provider\" text,\n  \"providerRunId\" text,\n  \"startedAt\" timestamptz,\n  \"status\" text NOT NULL,\n  \"toolName\" text NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"toolInvocation_status_check_be53ae1d\" CHECK (\"status\" IN ('QUEUED', 'RUNNING', 'COMPLETED', 'FAILED', 'CANCELLED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"toolInvocation\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"toolInvocation\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.user",
+    "label": "Create table \"user\"",
+    "summary": "Creates table \"user\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "user"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"user\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"user\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"user\"",
+        "sql": "CREATE TABLE \"public\".\"user\" (\n  \"clerkId\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"email\" text,\n  \"id\" text NOT NULL,\n  \"name\" text,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"user\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"user\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.waitpoint",
+    "label": "Create table \"waitpoint\"",
+    "summary": "Creates table \"waitpoint\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "waitpoint"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"waitpoint\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"waitpoint\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"waitpoint\"",
+        "sql": "CREATE TABLE \"public\".\"waitpoint\" (\n  \"agentRunId\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" text NOT NULL,\n  \"input\" json,\n  \"response\" json,\n  \"resumedAt\" timestamptz,\n  \"status\" text NOT NULL,\n  \"token\" text NOT NULL,\n  \"type\" text NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"waitpoint_status_check_2e97c9ea\" CHECK (\"status\" IN ('PENDING', 'RESUMED', 'EXPIRED', 'CANCELLED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"waitpoint\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"waitpoint\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.creditLedger.creditLedger_idempotencyKey_key",
+    "label": "Add unique constraint on \"creditLedger\" (idempotencyKey)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "creditLedger_idempotencyKey_key",
+        "table": "creditLedger"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"creditLedger_idempotencyKey_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "creditLedger_idempotencyKey_key",
+          "public",
+          "\"public\".\"creditLedger\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"creditLedger_idempotencyKey_key\"",
+        "sql": "ALTER TABLE \"public\".\"creditLedger\" ADD CONSTRAINT \"creditLedger_idempotencyKey_key\" UNIQUE (\"idempotencyKey\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"creditLedger_idempotencyKey_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "creditLedger_idempotencyKey_key",
+          "public",
+          "\"public\".\"creditLedger\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.runSkill.runSkill_agentRunId_skillName_key",
+    "label": "Add unique constraint on \"runSkill\" (agentRunId, skillName)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "runSkill_agentRunId_skillName_key",
+        "table": "runSkill"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"runSkill_agentRunId_skillName_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "runSkill_agentRunId_skillName_key",
+          "public",
+          "\"public\".\"runSkill\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"runSkill_agentRunId_skillName_key\"",
+        "sql": "ALTER TABLE \"public\".\"runSkill\" ADD CONSTRAINT \"runSkill_agentRunId_skillName_key\" UNIQUE (\"agentRunId\", \"skillName\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"runSkill_agentRunId_skillName_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "runSkill_agentRunId_skillName_key",
+          "public",
+          "\"public\".\"runSkill\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.toolInvocation.toolInvocation_idempotencyKey_key",
+    "label": "Add unique constraint on \"toolInvocation\" (idempotencyKey)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "toolInvocation_idempotencyKey_key",
+        "table": "toolInvocation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"toolInvocation_idempotencyKey_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "toolInvocation_idempotencyKey_key",
+          "public",
+          "\"public\".\"toolInvocation\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"toolInvocation_idempotencyKey_key\"",
+        "sql": "ALTER TABLE \"public\".\"toolInvocation\" ADD CONSTRAINT \"toolInvocation_idempotencyKey_key\" UNIQUE (\"idempotencyKey\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"toolInvocation_idempotencyKey_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "toolInvocation_idempotencyKey_key",
+          "public",
+          "\"public\".\"toolInvocation\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.user.user_clerkId_key",
+    "label": "Add unique constraint on \"user\" (clerkId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "user_clerkId_key",
+        "table": "user"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"user_clerkId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "user_clerkId_key",
+          "public",
+          "\"public\".\"user\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"user_clerkId_key\"",
+        "sql": "ALTER TABLE \"public\".\"user\" ADD CONSTRAINT \"user_clerkId_key\" UNIQUE (\"clerkId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"user_clerkId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "user_clerkId_key",
+          "public",
+          "\"public\".\"user\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.waitpoint.waitpoint_token_key",
+    "label": "Add unique constraint on \"waitpoint\" (token)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "waitpoint_token_key",
+        "table": "waitpoint"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"waitpoint_token_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "waitpoint_token_key",
+          "public",
+          "\"public\".\"waitpoint\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"waitpoint_token_key\"",
+        "sql": "ALTER TABLE \"public\".\"waitpoint\" ADD CONSTRAINT \"waitpoint_token_key\" UNIQUE (\"token\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"waitpoint_token_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "waitpoint_token_key",
+          "public",
+          "\"public\".\"waitpoint\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.agentRun.agentRun_chatId_idx_53965835",
+    "label": "Create index \"agentRun_chatId_idx_53965835\" on \"agentRun\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "agentRun_chatId_idx_53965835",
+        "table": "agentRun"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"agentRun_chatId_idx_53965835\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"agentRun_chatId_idx_53965835\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"agentRun_chatId_idx_53965835\"",
+        "sql": "CREATE INDEX \"agentRun_chatId_idx_53965835\" ON \"public\".\"agentRun\" (\"chatId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"agentRun_chatId_idx_53965835\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"agentRun_chatId_idx_53965835\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.agentRun.agentRun_messageId_idx_3cdded8d",
+    "label": "Create index \"agentRun_messageId_idx_3cdded8d\" on \"agentRun\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "agentRun_messageId_idx_3cdded8d",
+        "table": "agentRun"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"agentRun_messageId_idx_3cdded8d\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"agentRun_messageId_idx_3cdded8d\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"agentRun_messageId_idx_3cdded8d\"",
+        "sql": "CREATE INDEX \"agentRun_messageId_idx_3cdded8d\" ON \"public\".\"agentRun\" (\"messageId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"agentRun_messageId_idx_3cdded8d\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"agentRun_messageId_idx_3cdded8d\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.agentRun.agentRun_userId_idx_a489d58a",
+    "label": "Create index \"agentRun_userId_idx_a489d58a\" on \"agentRun\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "agentRun_userId_idx_a489d58a",
+        "table": "agentRun"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"agentRun_userId_idx_a489d58a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"agentRun_userId_idx_a489d58a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"agentRun_userId_idx_a489d58a\"",
+        "sql": "CREATE INDEX \"agentRun_userId_idx_a489d58a\" ON \"public\".\"agentRun\" (\"userId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"agentRun_userId_idx_a489d58a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"agentRun_userId_idx_a489d58a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.attachment.attachment_chatId_idx_53965835",
+    "label": "Create index \"attachment_chatId_idx_53965835\" on \"attachment\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "attachment_chatId_idx_53965835",
+        "table": "attachment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"attachment_chatId_idx_53965835\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"attachment_chatId_idx_53965835\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"attachment_chatId_idx_53965835\"",
+        "sql": "CREATE INDEX \"attachment_chatId_idx_53965835\" ON \"public\".\"attachment\" (\"chatId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"attachment_chatId_idx_53965835\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"attachment_chatId_idx_53965835\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.attachment.attachment_messageId_idx_3cdded8d",
+    "label": "Create index \"attachment_messageId_idx_3cdded8d\" on \"attachment\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "attachment_messageId_idx_3cdded8d",
+        "table": "attachment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"attachment_messageId_idx_3cdded8d\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"attachment_messageId_idx_3cdded8d\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"attachment_messageId_idx_3cdded8d\"",
+        "sql": "CREATE INDEX \"attachment_messageId_idx_3cdded8d\" ON \"public\".\"attachment\" (\"messageId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"attachment_messageId_idx_3cdded8d\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"attachment_messageId_idx_3cdded8d\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.attachment.attachment_userId_idx_a489d58a",
+    "label": "Create index \"attachment_userId_idx_a489d58a\" on \"attachment\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "attachment_userId_idx_a489d58a",
+        "table": "attachment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"attachment_userId_idx_a489d58a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"attachment_userId_idx_a489d58a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"attachment_userId_idx_a489d58a\"",
+        "sql": "CREATE INDEX \"attachment_userId_idx_a489d58a\" ON \"public\".\"attachment\" (\"userId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"attachment_userId_idx_a489d58a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"attachment_userId_idx_a489d58a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.chat.chat_userId_createdAt_id_idx_786b3fe4",
+    "label": "Create index \"chat_userId_createdAt_id_idx_786b3fe4\" on \"chat\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "chat_userId_createdAt_id_idx_786b3fe4",
+        "table": "chat"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"chat_userId_createdAt_id_idx_786b3fe4\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"chat_userId_createdAt_id_idx_786b3fe4\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"chat_userId_createdAt_id_idx_786b3fe4\"",
+        "sql": "CREATE INDEX \"chat_userId_createdAt_id_idx_786b3fe4\" ON \"public\".\"chat\" (\"userId\", \"createdAt\", \"id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"chat_userId_createdAt_id_idx_786b3fe4\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"chat_userId_createdAt_id_idx_786b3fe4\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.chat.chat_userId_idx_a489d58a",
+    "label": "Create index \"chat_userId_idx_a489d58a\" on \"chat\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "chat_userId_idx_a489d58a",
+        "table": "chat"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"chat_userId_idx_a489d58a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"chat_userId_idx_a489d58a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"chat_userId_idx_a489d58a\"",
+        "sql": "CREATE INDEX \"chat_userId_idx_a489d58a\" ON \"public\".\"chat\" (\"userId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"chat_userId_idx_a489d58a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"chat_userId_idx_a489d58a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.creditLedger.creditLedger_agentRunId_idx_1f80425e",
+    "label": "Create index \"creditLedger_agentRunId_idx_1f80425e\" on \"creditLedger\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "creditLedger_agentRunId_idx_1f80425e",
+        "table": "creditLedger"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"creditLedger_agentRunId_idx_1f80425e\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"creditLedger_agentRunId_idx_1f80425e\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"creditLedger_agentRunId_idx_1f80425e\"",
+        "sql": "CREATE INDEX \"creditLedger_agentRunId_idx_1f80425e\" ON \"public\".\"creditLedger\" (\"agentRunId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"creditLedger_agentRunId_idx_1f80425e\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"creditLedger_agentRunId_idx_1f80425e\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.creditLedger.creditLedger_toolInvocationId_idx_e6be9b8d",
+    "label": "Create index \"creditLedger_toolInvocationId_idx_e6be9b8d\" on \"creditLedger\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "creditLedger_toolInvocationId_idx_e6be9b8d",
+        "table": "creditLedger"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"creditLedger_toolInvocationId_idx_e6be9b8d\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"creditLedger_toolInvocationId_idx_e6be9b8d\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"creditLedger_toolInvocationId_idx_e6be9b8d\"",
+        "sql": "CREATE INDEX \"creditLedger_toolInvocationId_idx_e6be9b8d\" ON \"public\".\"creditLedger\" (\"toolInvocationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"creditLedger_toolInvocationId_idx_e6be9b8d\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"creditLedger_toolInvocationId_idx_e6be9b8d\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.creditLedger.creditLedger_userId_idx_a489d58a",
+    "label": "Create index \"creditLedger_userId_idx_a489d58a\" on \"creditLedger\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "creditLedger_userId_idx_a489d58a",
+        "table": "creditLedger"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"creditLedger_userId_idx_a489d58a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"creditLedger_userId_idx_a489d58a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"creditLedger_userId_idx_a489d58a\"",
+        "sql": "CREATE INDEX \"creditLedger_userId_idx_a489d58a\" ON \"public\".\"creditLedger\" (\"userId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"creditLedger_userId_idx_a489d58a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"creditLedger_userId_idx_a489d58a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.generatedAsset.generatedAsset_chatId_idx_53965835",
+    "label": "Create index \"generatedAsset_chatId_idx_53965835\" on \"generatedAsset\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "generatedAsset_chatId_idx_53965835",
+        "table": "generatedAsset"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"generatedAsset_chatId_idx_53965835\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"generatedAsset_chatId_idx_53965835\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"generatedAsset_chatId_idx_53965835\"",
+        "sql": "CREATE INDEX \"generatedAsset_chatId_idx_53965835\" ON \"public\".\"generatedAsset\" (\"chatId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"generatedAsset_chatId_idx_53965835\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"generatedAsset_chatId_idx_53965835\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.generatedAsset.generatedAsset_messageId_idx_3cdded8d",
+    "label": "Create index \"generatedAsset_messageId_idx_3cdded8d\" on \"generatedAsset\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "generatedAsset_messageId_idx_3cdded8d",
+        "table": "generatedAsset"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"generatedAsset_messageId_idx_3cdded8d\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"generatedAsset_messageId_idx_3cdded8d\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"generatedAsset_messageId_idx_3cdded8d\"",
+        "sql": "CREATE INDEX \"generatedAsset_messageId_idx_3cdded8d\" ON \"public\".\"generatedAsset\" (\"messageId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"generatedAsset_messageId_idx_3cdded8d\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"generatedAsset_messageId_idx_3cdded8d\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.generatedAsset.generatedAsset_toolInvocationId_idx_e6be9b8d",
+    "label": "Create index \"generatedAsset_toolInvocationId_idx_e6be9b8d\" on \"generatedAsset\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "generatedAsset_toolInvocationId_idx_e6be9b8d",
+        "table": "generatedAsset"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"generatedAsset_toolInvocationId_idx_e6be9b8d\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"generatedAsset_toolInvocationId_idx_e6be9b8d\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"generatedAsset_toolInvocationId_idx_e6be9b8d\"",
+        "sql": "CREATE INDEX \"generatedAsset_toolInvocationId_idx_e6be9b8d\" ON \"public\".\"generatedAsset\" (\"toolInvocationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"generatedAsset_toolInvocationId_idx_e6be9b8d\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"generatedAsset_toolInvocationId_idx_e6be9b8d\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.generatedAsset.generatedAsset_userId_idx_a489d58a",
+    "label": "Create index \"generatedAsset_userId_idx_a489d58a\" on \"generatedAsset\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "generatedAsset_userId_idx_a489d58a",
+        "table": "generatedAsset"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"generatedAsset_userId_idx_a489d58a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"generatedAsset_userId_idx_a489d58a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"generatedAsset_userId_idx_a489d58a\"",
+        "sql": "CREATE INDEX \"generatedAsset_userId_idx_a489d58a\" ON \"public\".\"generatedAsset\" (\"userId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"generatedAsset_userId_idx_a489d58a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"generatedAsset_userId_idx_a489d58a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.message.message_chatId_idx_53965835",
+    "label": "Create index \"message_chatId_idx_53965835\" on \"message\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "message_chatId_idx_53965835",
+        "table": "message"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"message_chatId_idx_53965835\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"message_chatId_idx_53965835\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"message_chatId_idx_53965835\"",
+        "sql": "CREATE INDEX \"message_chatId_idx_53965835\" ON \"public\".\"message\" (\"chatId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"message_chatId_idx_53965835\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"message_chatId_idx_53965835\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.message.message_userId_idx_a489d58a",
+    "label": "Create index \"message_userId_idx_a489d58a\" on \"message\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "message_userId_idx_a489d58a",
+        "table": "message"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"message_userId_idx_a489d58a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"message_userId_idx_a489d58a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"message_userId_idx_a489d58a\"",
+        "sql": "CREATE INDEX \"message_userId_idx_a489d58a\" ON \"public\".\"message\" (\"userId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"message_userId_idx_a489d58a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"message_userId_idx_a489d58a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.runSkill.runSkill_agentRunId_idx_1f80425e",
+    "label": "Create index \"runSkill_agentRunId_idx_1f80425e\" on \"runSkill\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "runSkill_agentRunId_idx_1f80425e",
+        "table": "runSkill"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"runSkill_agentRunId_idx_1f80425e\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"runSkill_agentRunId_idx_1f80425e\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"runSkill_agentRunId_idx_1f80425e\"",
+        "sql": "CREATE INDEX \"runSkill_agentRunId_idx_1f80425e\" ON \"public\".\"runSkill\" (\"agentRunId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"runSkill_agentRunId_idx_1f80425e\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"runSkill_agentRunId_idx_1f80425e\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.toolInvocation.toolInvocation_agentRunId_idx_1f80425e",
+    "label": "Create index \"toolInvocation_agentRunId_idx_1f80425e\" on \"toolInvocation\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "toolInvocation_agentRunId_idx_1f80425e",
+        "table": "toolInvocation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"toolInvocation_agentRunId_idx_1f80425e\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"toolInvocation_agentRunId_idx_1f80425e\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"toolInvocation_agentRunId_idx_1f80425e\"",
+        "sql": "CREATE INDEX \"toolInvocation_agentRunId_idx_1f80425e\" ON \"public\".\"toolInvocation\" (\"agentRunId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"toolInvocation_agentRunId_idx_1f80425e\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"toolInvocation_agentRunId_idx_1f80425e\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.toolInvocation.toolInvocation_chatId_idx_53965835",
+    "label": "Create index \"toolInvocation_chatId_idx_53965835\" on \"toolInvocation\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "toolInvocation_chatId_idx_53965835",
+        "table": "toolInvocation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"toolInvocation_chatId_idx_53965835\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"toolInvocation_chatId_idx_53965835\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"toolInvocation_chatId_idx_53965835\"",
+        "sql": "CREATE INDEX \"toolInvocation_chatId_idx_53965835\" ON \"public\".\"toolInvocation\" (\"chatId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"toolInvocation_chatId_idx_53965835\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"toolInvocation_chatId_idx_53965835\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.toolInvocation.toolInvocation_messageId_idx_3cdded8d",
+    "label": "Create index \"toolInvocation_messageId_idx_3cdded8d\" on \"toolInvocation\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "toolInvocation_messageId_idx_3cdded8d",
+        "table": "toolInvocation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"toolInvocation_messageId_idx_3cdded8d\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"toolInvocation_messageId_idx_3cdded8d\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"toolInvocation_messageId_idx_3cdded8d\"",
+        "sql": "CREATE INDEX \"toolInvocation_messageId_idx_3cdded8d\" ON \"public\".\"toolInvocation\" (\"messageId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"toolInvocation_messageId_idx_3cdded8d\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"toolInvocation_messageId_idx_3cdded8d\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.waitpoint.waitpoint_agentRunId_idx_1f80425e",
+    "label": "Create index \"waitpoint_agentRunId_idx_1f80425e\" on \"waitpoint\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "waitpoint_agentRunId_idx_1f80425e",
+        "table": "waitpoint"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"waitpoint_agentRunId_idx_1f80425e\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"waitpoint_agentRunId_idx_1f80425e\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"waitpoint_agentRunId_idx_1f80425e\"",
+        "sql": "CREATE INDEX \"waitpoint_agentRunId_idx_1f80425e\" ON \"public\".\"waitpoint\" (\"agentRunId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"waitpoint_agentRunId_idx_1f80425e\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"waitpoint_agentRunId_idx_1f80425e\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.agentRun.agentRun_chatId_fkey",
+    "label": "Add foreign key \"agentRun_chatId_fkey\" on \"agentRun\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "agentRun_chatId_fkey",
+        "table": "agentRun"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"agentRun_chatId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "agentRun_chatId_fkey",
+          "public",
+          "\"public\".\"agentRun\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"agentRun_chatId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"agentRun\"\nADD CONSTRAINT \"agentRun_chatId_fkey\"\nFOREIGN KEY (\"chatId\")\nREFERENCES \"public\".\"chat\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"agentRun_chatId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "agentRun_chatId_fkey",
+          "public",
+          "\"public\".\"agentRun\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.agentRun.agentRun_userId_fkey",
+    "label": "Add foreign key \"agentRun_userId_fkey\" on \"agentRun\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "agentRun_userId_fkey",
+        "table": "agentRun"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"agentRun_userId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "agentRun_userId_fkey",
+          "public",
+          "\"public\".\"agentRun\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"agentRun_userId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"agentRun\"\nADD CONSTRAINT \"agentRun_userId_fkey\"\nFOREIGN KEY (\"userId\")\nREFERENCES \"public\".\"user\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"agentRun_userId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "agentRun_userId_fkey",
+          "public",
+          "\"public\".\"agentRun\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.agentRun.agentRun_messageId_fkey",
+    "label": "Add foreign key \"agentRun_messageId_fkey\" on \"agentRun\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "agentRun_messageId_fkey",
+        "table": "agentRun"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"agentRun_messageId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "agentRun_messageId_fkey",
+          "public",
+          "\"public\".\"agentRun\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"agentRun_messageId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"agentRun\"\nADD CONSTRAINT \"agentRun_messageId_fkey\"\nFOREIGN KEY (\"messageId\")\nREFERENCES \"public\".\"message\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"agentRun_messageId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "agentRun_messageId_fkey",
+          "public",
+          "\"public\".\"agentRun\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.attachment.attachment_userId_fkey",
+    "label": "Add foreign key \"attachment_userId_fkey\" on \"attachment\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "attachment_userId_fkey",
+        "table": "attachment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"attachment_userId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "attachment_userId_fkey",
+          "public",
+          "\"public\".\"attachment\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"attachment_userId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"attachment\"\nADD CONSTRAINT \"attachment_userId_fkey\"\nFOREIGN KEY (\"userId\")\nREFERENCES \"public\".\"user\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"attachment_userId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "attachment_userId_fkey",
+          "public",
+          "\"public\".\"attachment\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.attachment.attachment_chatId_fkey",
+    "label": "Add foreign key \"attachment_chatId_fkey\" on \"attachment\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "attachment_chatId_fkey",
+        "table": "attachment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"attachment_chatId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "attachment_chatId_fkey",
+          "public",
+          "\"public\".\"attachment\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"attachment_chatId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"attachment\"\nADD CONSTRAINT \"attachment_chatId_fkey\"\nFOREIGN KEY (\"chatId\")\nREFERENCES \"public\".\"chat\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"attachment_chatId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "attachment_chatId_fkey",
+          "public",
+          "\"public\".\"attachment\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.attachment.attachment_messageId_fkey",
+    "label": "Add foreign key \"attachment_messageId_fkey\" on \"attachment\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "attachment_messageId_fkey",
+        "table": "attachment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"attachment_messageId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "attachment_messageId_fkey",
+          "public",
+          "\"public\".\"attachment\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"attachment_messageId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"attachment\"\nADD CONSTRAINT \"attachment_messageId_fkey\"\nFOREIGN KEY (\"messageId\")\nREFERENCES \"public\".\"message\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"attachment_messageId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "attachment_messageId_fkey",
+          "public",
+          "\"public\".\"attachment\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.chat.chat_userId_fkey",
+    "label": "Add foreign key \"chat_userId_fkey\" on \"chat\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "chat_userId_fkey",
+        "table": "chat"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"chat_userId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "chat_userId_fkey",
+          "public",
+          "\"public\".\"chat\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"chat_userId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"chat\"\nADD CONSTRAINT \"chat_userId_fkey\"\nFOREIGN KEY (\"userId\")\nREFERENCES \"public\".\"user\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"chat_userId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "chat_userId_fkey",
+          "public",
+          "\"public\".\"chat\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.creditLedger.creditLedger_userId_fkey",
+    "label": "Add foreign key \"creditLedger_userId_fkey\" on \"creditLedger\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "creditLedger_userId_fkey",
+        "table": "creditLedger"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"creditLedger_userId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "creditLedger_userId_fkey",
+          "public",
+          "\"public\".\"creditLedger\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"creditLedger_userId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"creditLedger\"\nADD CONSTRAINT \"creditLedger_userId_fkey\"\nFOREIGN KEY (\"userId\")\nREFERENCES \"public\".\"user\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"creditLedger_userId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "creditLedger_userId_fkey",
+          "public",
+          "\"public\".\"creditLedger\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.creditLedger.creditLedger_agentRunId_fkey",
+    "label": "Add foreign key \"creditLedger_agentRunId_fkey\" on \"creditLedger\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "creditLedger_agentRunId_fkey",
+        "table": "creditLedger"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"creditLedger_agentRunId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "creditLedger_agentRunId_fkey",
+          "public",
+          "\"public\".\"creditLedger\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"creditLedger_agentRunId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"creditLedger\"\nADD CONSTRAINT \"creditLedger_agentRunId_fkey\"\nFOREIGN KEY (\"agentRunId\")\nREFERENCES \"public\".\"agentRun\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"creditLedger_agentRunId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "creditLedger_agentRunId_fkey",
+          "public",
+          "\"public\".\"creditLedger\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.creditLedger.creditLedger_toolInvocationId_fkey",
+    "label": "Add foreign key \"creditLedger_toolInvocationId_fkey\" on \"creditLedger\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "creditLedger_toolInvocationId_fkey",
+        "table": "creditLedger"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"creditLedger_toolInvocationId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "creditLedger_toolInvocationId_fkey",
+          "public",
+          "\"public\".\"creditLedger\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"creditLedger_toolInvocationId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"creditLedger\"\nADD CONSTRAINT \"creditLedger_toolInvocationId_fkey\"\nFOREIGN KEY (\"toolInvocationId\")\nREFERENCES \"public\".\"toolInvocation\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"creditLedger_toolInvocationId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "creditLedger_toolInvocationId_fkey",
+          "public",
+          "\"public\".\"creditLedger\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.generatedAsset.generatedAsset_userId_fkey",
+    "label": "Add foreign key \"generatedAsset_userId_fkey\" on \"generatedAsset\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "generatedAsset_userId_fkey",
+        "table": "generatedAsset"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"generatedAsset_userId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "generatedAsset_userId_fkey",
+          "public",
+          "\"public\".\"generatedAsset\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"generatedAsset_userId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"generatedAsset\"\nADD CONSTRAINT \"generatedAsset_userId_fkey\"\nFOREIGN KEY (\"userId\")\nREFERENCES \"public\".\"user\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"generatedAsset_userId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "generatedAsset_userId_fkey",
+          "public",
+          "\"public\".\"generatedAsset\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.generatedAsset.generatedAsset_chatId_fkey",
+    "label": "Add foreign key \"generatedAsset_chatId_fkey\" on \"generatedAsset\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "generatedAsset_chatId_fkey",
+        "table": "generatedAsset"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"generatedAsset_chatId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "generatedAsset_chatId_fkey",
+          "public",
+          "\"public\".\"generatedAsset\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"generatedAsset_chatId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"generatedAsset\"\nADD CONSTRAINT \"generatedAsset_chatId_fkey\"\nFOREIGN KEY (\"chatId\")\nREFERENCES \"public\".\"chat\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"generatedAsset_chatId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "generatedAsset_chatId_fkey",
+          "public",
+          "\"public\".\"generatedAsset\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.generatedAsset.generatedAsset_messageId_fkey",
+    "label": "Add foreign key \"generatedAsset_messageId_fkey\" on \"generatedAsset\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "generatedAsset_messageId_fkey",
+        "table": "generatedAsset"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"generatedAsset_messageId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "generatedAsset_messageId_fkey",
+          "public",
+          "\"public\".\"generatedAsset\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"generatedAsset_messageId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"generatedAsset\"\nADD CONSTRAINT \"generatedAsset_messageId_fkey\"\nFOREIGN KEY (\"messageId\")\nREFERENCES \"public\".\"message\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"generatedAsset_messageId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "generatedAsset_messageId_fkey",
+          "public",
+          "\"public\".\"generatedAsset\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.generatedAsset.generatedAsset_toolInvocationId_fkey",
+    "label": "Add foreign key \"generatedAsset_toolInvocationId_fkey\" on \"generatedAsset\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "generatedAsset_toolInvocationId_fkey",
+        "table": "generatedAsset"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"generatedAsset_toolInvocationId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "generatedAsset_toolInvocationId_fkey",
+          "public",
+          "\"public\".\"generatedAsset\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"generatedAsset_toolInvocationId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"generatedAsset\"\nADD CONSTRAINT \"generatedAsset_toolInvocationId_fkey\"\nFOREIGN KEY (\"toolInvocationId\")\nREFERENCES \"public\".\"toolInvocation\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"generatedAsset_toolInvocationId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "generatedAsset_toolInvocationId_fkey",
+          "public",
+          "\"public\".\"generatedAsset\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.message.message_chatId_fkey",
+    "label": "Add foreign key \"message_chatId_fkey\" on \"message\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "message_chatId_fkey",
+        "table": "message"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"message_chatId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "message_chatId_fkey",
+          "public",
+          "\"public\".\"message\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"message_chatId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"message\"\nADD CONSTRAINT \"message_chatId_fkey\"\nFOREIGN KEY (\"chatId\")\nREFERENCES \"public\".\"chat\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"message_chatId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "message_chatId_fkey",
+          "public",
+          "\"public\".\"message\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.message.message_userId_fkey",
+    "label": "Add foreign key \"message_userId_fkey\" on \"message\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "message_userId_fkey",
+        "table": "message"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"message_userId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "message_userId_fkey",
+          "public",
+          "\"public\".\"message\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"message_userId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"message\"\nADD CONSTRAINT \"message_userId_fkey\"\nFOREIGN KEY (\"userId\")\nREFERENCES \"public\".\"user\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"message_userId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "message_userId_fkey",
+          "public",
+          "\"public\".\"message\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.runSkill.runSkill_agentRunId_fkey",
+    "label": "Add foreign key \"runSkill_agentRunId_fkey\" on \"runSkill\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "runSkill_agentRunId_fkey",
+        "table": "runSkill"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"runSkill_agentRunId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "runSkill_agentRunId_fkey",
+          "public",
+          "\"public\".\"runSkill\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"runSkill_agentRunId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"runSkill\"\nADD CONSTRAINT \"runSkill_agentRunId_fkey\"\nFOREIGN KEY (\"agentRunId\")\nREFERENCES \"public\".\"agentRun\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"runSkill_agentRunId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "runSkill_agentRunId_fkey",
+          "public",
+          "\"public\".\"runSkill\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.toolInvocation.toolInvocation_agentRunId_fkey",
+    "label": "Add foreign key \"toolInvocation_agentRunId_fkey\" on \"toolInvocation\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "toolInvocation_agentRunId_fkey",
+        "table": "toolInvocation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"toolInvocation_agentRunId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "toolInvocation_agentRunId_fkey",
+          "public",
+          "\"public\".\"toolInvocation\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"toolInvocation_agentRunId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"toolInvocation\"\nADD CONSTRAINT \"toolInvocation_agentRunId_fkey\"\nFOREIGN KEY (\"agentRunId\")\nREFERENCES \"public\".\"agentRun\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"toolInvocation_agentRunId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "toolInvocation_agentRunId_fkey",
+          "public",
+          "\"public\".\"toolInvocation\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.toolInvocation.toolInvocation_chatId_fkey",
+    "label": "Add foreign key \"toolInvocation_chatId_fkey\" on \"toolInvocation\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "toolInvocation_chatId_fkey",
+        "table": "toolInvocation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"toolInvocation_chatId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "toolInvocation_chatId_fkey",
+          "public",
+          "\"public\".\"toolInvocation\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"toolInvocation_chatId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"toolInvocation\"\nADD CONSTRAINT \"toolInvocation_chatId_fkey\"\nFOREIGN KEY (\"chatId\")\nREFERENCES \"public\".\"chat\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"toolInvocation_chatId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "toolInvocation_chatId_fkey",
+          "public",
+          "\"public\".\"toolInvocation\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.toolInvocation.toolInvocation_messageId_fkey",
+    "label": "Add foreign key \"toolInvocation_messageId_fkey\" on \"toolInvocation\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "toolInvocation_messageId_fkey",
+        "table": "toolInvocation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"toolInvocation_messageId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "toolInvocation_messageId_fkey",
+          "public",
+          "\"public\".\"toolInvocation\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"toolInvocation_messageId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"toolInvocation\"\nADD CONSTRAINT \"toolInvocation_messageId_fkey\"\nFOREIGN KEY (\"messageId\")\nREFERENCES \"public\".\"message\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"toolInvocation_messageId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "toolInvocation_messageId_fkey",
+          "public",
+          "\"public\".\"toolInvocation\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.waitpoint.waitpoint_agentRunId_fkey",
+    "label": "Add foreign key \"waitpoint_agentRunId_fkey\" on \"waitpoint\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "waitpoint_agentRunId_fkey",
+        "table": "waitpoint"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"waitpoint_agentRunId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "waitpoint_agentRunId_fkey",
+          "public",
+          "\"public\".\"waitpoint\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"waitpoint_agentRunId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"waitpoint\"\nADD CONSTRAINT \"waitpoint_agentRunId_fkey\"\nFOREIGN KEY (\"agentRunId\")\nREFERENCES \"public\".\"agentRun\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"waitpoint_agentRunId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "waitpoint_agentRunId_fkey",
+          "public",
+          "\"public\".\"waitpoint\""
+        ]
+      }
+    ]
+  }
+]
