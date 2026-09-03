@@ -1,4 +1,5 @@
 import { db } from '../prisma/db';
+import { Temporal } from '@js-temporal/polyfill';
 
 export const UserRepository = {
   async createUser(clerkId: string, email: string | undefined, name: string) {
@@ -6,7 +7,7 @@ export const UserRepository = {
       clerkId,
       email,
       name,
-      updatedAt: new Date(),
+      updatedAt: Temporal.Now.instant(),
     });
   }
 };
