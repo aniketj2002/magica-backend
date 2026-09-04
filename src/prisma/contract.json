@@ -295,8 +295,22 @@
                   "kind": "scalar"
                 }
               },
+              "heartbeatAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
               "id": {
                 "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "idempotencyKey": {
+                "nullable": true,
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
@@ -364,10 +378,24 @@
                   "kind": "scalar"
                 }
               },
+              "triggerRunId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "triggerTaskId": {
                 "nullable": true,
                 "type": {
                   "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "turnCount": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
                   "kind": "scalar"
                 }
               },
@@ -425,6 +453,21 @@
                   ],
                   "targetFields": [
                     "id"
+                  ]
+                },
+                "to": {
+                  "model": "Message",
+                  "namespace": "public"
+                }
+              },
+              "messages": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "agentRunId"
                   ]
                 },
                 "to": {
@@ -513,8 +556,14 @@
                 "errorMessage": {
                   "column": "errorMessage"
                 },
+                "heartbeatAt": {
+                  "column": "heartbeatAt"
+                },
                 "id": {
                   "column": "id"
+                },
+                "idempotencyKey": {
+                  "column": "idempotencyKey"
                 },
                 "messageId": {
                   "column": "messageId"
@@ -540,8 +589,14 @@
                 "totalTokens": {
                   "column": "totalTokens"
                 },
+                "triggerRunId": {
+                  "column": "triggerRunId"
+                },
                 "triggerTaskId": {
                   "column": "triggerTaskId"
+                },
+                "turnCount": {
+                  "column": "turnCount"
                 },
                 "updatedAt": {
                   "column": "updatedAt"
@@ -1272,6 +1327,13 @@
           },
           "Message": {
             "fields": {
+              "agentRunId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "chatId": {
                 "nullable": false,
                 "type": {
@@ -1349,6 +1411,21 @@
               }
             },
             "relations": {
+              "agentRun": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "agentRunId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "AgentRun",
+                  "namespace": "public"
+                }
+              },
               "agentRuns": {
                 "cardinality": "1:N",
                 "on": {
@@ -1442,6 +1519,9 @@
             },
             "storage": {
               "fields": {
+                "agentRunId": {
+                  "column": "agentRunId"
+                },
                 "chatId": {
                   "column": "chatId"
                 },
@@ -1836,6 +1916,13 @@
           },
           "User": {
             "fields": {
+              "balance": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
               "clerkId": {
                 "nullable": false,
                 "type": {
@@ -1973,6 +2060,9 @@
             },
             "storage": {
               "fields": {
+                "balance": {
+                  "column": "balance"
+                },
                 "clerkId": {
                   "column": "clerkId"
                 },
@@ -2181,10 +2271,20 @@
                   "nativeType": "text",
                   "nullable": true
                 },
+                "heartbeatAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
                 "id": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
                   "nullable": false
+                },
+                "idempotencyKey": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
                 },
                 "messageId": {
                   "codecId": "pg/text@1",
@@ -2232,9 +2332,19 @@
                   "nativeType": "int4",
                   "nullable": true
                 },
+                "triggerRunId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
                 "triggerTaskId": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
+                  "nullable": true
+                },
+                "turnCount": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
                   "nullable": true
                 },
                 "updatedAt": {
@@ -2309,6 +2419,15 @@
                 },
                 {
                   "columns": [
+                    "chatId",
+                    "status"
+                  ],
+                  "name": "agentRun_chatId_status_idx_65a3df10",
+                  "prefix": "agentRun_chatId_status_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
                     "messageId"
                   ],
                   "name": "agentRun_messageId_idx_3cdded8d",
@@ -2329,7 +2448,13 @@
                   "id"
                 ]
               },
-              "uniques": []
+              "uniques": [
+                {
+                  "columns": [
+                    "idempotencyKey"
+                  ]
+                }
+              ]
             },
             "attachment": {
               "checks": [
@@ -2941,6 +3066,11 @@
                 }
               ],
               "columns": {
+                "agentRunId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
                 "chatId": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
@@ -3035,9 +3165,43 @@
                     "namespaceId": "public",
                     "tableName": "user"
                   }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "agentRunId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "message"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "agentRun"
+                  }
                 }
               ],
               "indexes": [
+                {
+                  "columns": [
+                    "agentRunId"
+                  ],
+                  "name": "message_agentRunId_idx_1f80425e",
+                  "prefix": "message_agentRunId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "chatId",
+                    "createdAt",
+                    "id"
+                  ],
+                  "name": "message_chatId_createdAt_id_idx_b3ce5307",
+                  "prefix": "message_chatId_createdAt_id_idx",
+                  "unique": false
+                },
                 {
                   "columns": [
                     "chatId"
@@ -3342,6 +3506,15 @@
             },
             "user": {
               "columns": {
+                "balance": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 0
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
                 "clerkId": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
@@ -3591,7 +3764,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "a3843bbdcda38ef4c59d1cfd056e92647d1545fceac5af64a6aabea59df4b364"
+    "storageHash": "0bcdc3aefc95316b7c7e9051407e62ae8ff6d33f5f14327b5ac2069010ff4f9a"
   },
   "execution": {
     "executionHash": "f130d18dbd43bfbf2cac8cf439afff6e5e2e248902409901e3bace7fdfb7e2e5",

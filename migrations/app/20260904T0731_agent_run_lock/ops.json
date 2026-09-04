@@ -1,0 +1,497 @@
+[
+  {
+    "id": "column.public.agentRun.heartbeatAt",
+    "label": "Add column \"heartbeatAt\" to \"agentRun\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "heartbeatAt",
+        "table": "agentRun"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"heartbeatAt\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "agentRun",
+          "heartbeatAt"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"heartbeatAt\"",
+        "sql": "ALTER TABLE \"public\".\"agentRun\" ADD COLUMN \"heartbeatAt\" timestamptz"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"heartbeatAt\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "agentRun",
+          "heartbeatAt"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.agentRun.idempotencyKey",
+    "label": "Add column \"idempotencyKey\" to \"agentRun\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "idempotencyKey",
+        "table": "agentRun"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"idempotencyKey\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "agentRun",
+          "idempotencyKey"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"idempotencyKey\"",
+        "sql": "ALTER TABLE \"public\".\"agentRun\" ADD COLUMN \"idempotencyKey\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"idempotencyKey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "agentRun",
+          "idempotencyKey"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.agentRun.triggerRunId",
+    "label": "Add column \"triggerRunId\" to \"agentRun\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "triggerRunId",
+        "table": "agentRun"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"triggerRunId\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "agentRun",
+          "triggerRunId"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"triggerRunId\"",
+        "sql": "ALTER TABLE \"public\".\"agentRun\" ADD COLUMN \"triggerRunId\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"triggerRunId\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "agentRun",
+          "triggerRunId"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.agentRun.turnCount",
+    "label": "Add column \"turnCount\" to \"agentRun\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "turnCount",
+        "table": "agentRun"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"turnCount\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "agentRun",
+          "turnCount"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"turnCount\"",
+        "sql": "ALTER TABLE \"public\".\"agentRun\" ADD COLUMN \"turnCount\" int4"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"turnCount\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "agentRun",
+          "turnCount"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.chat.activeRunId",
+    "label": "Add column \"activeRunId\" to \"chat\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "activeRunId",
+        "table": "chat"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"activeRunId\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "chat",
+          "activeRunId"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"activeRunId\"",
+        "sql": "ALTER TABLE \"public\".\"chat\" ADD COLUMN \"activeRunId\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"activeRunId\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "chat",
+          "activeRunId"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.message.agentRunId",
+    "label": "Add column \"agentRunId\" to \"message\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "agentRunId",
+        "table": "message"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"agentRunId\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "message",
+          "agentRunId"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"agentRunId\"",
+        "sql": "ALTER TABLE \"public\".\"message\" ADD COLUMN \"agentRunId\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"agentRunId\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "message",
+          "agentRunId"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.agentRun.agentRun_idempotencyKey_key",
+    "label": "Add unique constraint on \"agentRun\" (idempotencyKey)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "agentRun_idempotencyKey_key",
+        "table": "agentRun"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"agentRun_idempotencyKey_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "agentRun_idempotencyKey_key",
+          "public",
+          "\"public\".\"agentRun\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"agentRun_idempotencyKey_key\"",
+        "sql": "ALTER TABLE \"public\".\"agentRun\" ADD CONSTRAINT \"agentRun_idempotencyKey_key\" UNIQUE (\"idempotencyKey\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"agentRun_idempotencyKey_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "agentRun_idempotencyKey_key",
+          "public",
+          "\"public\".\"agentRun\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.chat.chat_activeRunId_key",
+    "label": "Add unique constraint on \"chat\" (activeRunId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "chat_activeRunId_key",
+        "table": "chat"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"chat_activeRunId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "chat_activeRunId_key",
+          "public",
+          "\"public\".\"chat\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"chat_activeRunId_key\"",
+        "sql": "ALTER TABLE \"public\".\"chat\" ADD CONSTRAINT \"chat_activeRunId_key\" UNIQUE (\"activeRunId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"chat_activeRunId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "chat_activeRunId_key",
+          "public",
+          "\"public\".\"chat\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.agentRun.agentRun_chatId_status_idx_65a3df10",
+    "label": "Create index \"agentRun_chatId_status_idx_65a3df10\" on \"agentRun\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "agentRun_chatId_status_idx_65a3df10",
+        "table": "agentRun"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"agentRun_chatId_status_idx_65a3df10\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"agentRun_chatId_status_idx_65a3df10\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"agentRun_chatId_status_idx_65a3df10\"",
+        "sql": "CREATE INDEX \"agentRun_chatId_status_idx_65a3df10\" ON \"public\".\"agentRun\" (\"chatId\", \"status\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"agentRun_chatId_status_idx_65a3df10\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"agentRun_chatId_status_idx_65a3df10\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.message.message_agentRunId_idx_1f80425e",
+    "label": "Create index \"message_agentRunId_idx_1f80425e\" on \"message\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "message_agentRunId_idx_1f80425e",
+        "table": "message"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"message_agentRunId_idx_1f80425e\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"message_agentRunId_idx_1f80425e\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"message_agentRunId_idx_1f80425e\"",
+        "sql": "CREATE INDEX \"message_agentRunId_idx_1f80425e\" ON \"public\".\"message\" (\"agentRunId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"message_agentRunId_idx_1f80425e\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"message_agentRunId_idx_1f80425e\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.message.message_chatId_createdAt_id_idx_b3ce5307",
+    "label": "Create index \"message_chatId_createdAt_id_idx_b3ce5307\" on \"message\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "message_chatId_createdAt_id_idx_b3ce5307",
+        "table": "message"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"message_chatId_createdAt_id_idx_b3ce5307\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"message_chatId_createdAt_id_idx_b3ce5307\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"message_chatId_createdAt_id_idx_b3ce5307\"",
+        "sql": "CREATE INDEX \"message_chatId_createdAt_id_idx_b3ce5307\" ON \"public\".\"message\" (\"chatId\", \"createdAt\", \"id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"message_chatId_createdAt_id_idx_b3ce5307\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"message_chatId_createdAt_id_idx_b3ce5307\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.message.message_agentRunId_fkey",
+    "label": "Add foreign key \"message_agentRunId_fkey\" on \"message\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "message_agentRunId_fkey",
+        "table": "message"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"message_agentRunId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "message_agentRunId_fkey",
+          "public",
+          "\"public\".\"message\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"message_agentRunId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"message\"\nADD CONSTRAINT \"message_agentRunId_fkey\"\nFOREIGN KEY (\"agentRunId\")\nREFERENCES \"public\".\"agentRun\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"message_agentRunId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "message_agentRunId_fkey",
+          "public",
+          "\"public\".\"message\""
+        ]
+      }
+    ]
+  }
+]

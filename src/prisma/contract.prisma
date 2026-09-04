@@ -10,6 +10,12 @@ model AgentRun {
   modelActual    String?
   
   triggerTaskId  String?
+  triggerRunId   String?
+  
+  idempotencyKey String?  @unique
+  
+  turnCount      Int?
+  heartbeatAt    DateTime?
   
   startedAt      DateTime?
   completedAt    DateTime?
@@ -28,12 +34,15 @@ model AgentRun {
 
   chat    Chat    @relation(fields: [chatId], references: [id])
   user    User    @relation(fields: [userId], references: [id])
-  message Message @relation(fields: [messageId], references: [id])
+  message Message @relation("AgentRunTriggerMessage", fields: [messageId], references: [id])
+  messages Message[] @relation("MessageAgentRun")
 
   toolInvocations ToolInvocation[]
   runSkills       RunSkill[]
   waitpoints      Waitpoint[]
   creditLedgers   CreditLedger[]
+
+  @@index([chatId, status])
 }
 
 
@@ -67,11 +76,11 @@ model Attachment {
 
 
 model Chat {
-  id        String   @id @default(uuid())
-  userId    String
-  title     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime 
+  id          String   @id @default(uuid())
+  userId      String
+  title       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime 
 
   user User @relation(fields: [userId], references: [id])
 
@@ -198,11 +207,12 @@ model GeneratedAsset {
 
 
 model Message {
-  id        String   @id @default(uuid())
-  chatId    String
-  userId    String
-  role      MessageRole
-  status    MessageStatus
+  id         String   @id @default(uuid())
+  chatId     String
+  userId     String
+  agentRunId String?
+  role       MessageRole
+  status     MessageStatus
 
   content   Json
   metadata  Json?
@@ -210,13 +220,16 @@ model Message {
   createdAt DateTime @default(now())
   updatedAt DateTime 
 
-  chat Chat @relation(fields: [chatId], references: [id])
-  user User @relation(fields: [userId], references: [id])
+  chat     Chat      @relation(fields: [chatId], references: [id])
+  user     User      @relation(fields: [userId], references: [id])
+  agentRun AgentRun? @relation("MessageAgentRun", fields: [agentRunId], references: [id])
 
   attachments     Attachment[]
   generatedAssets GeneratedAsset[]
-  agentRuns       AgentRun[]
+  agentRuns       AgentRun[] @relation("AgentRunTriggerMessage")
   toolInvocations ToolInvocation[]
+
+  @@index([chatId, createdAt, id])
 }
 
 
@@ -278,6 +291,7 @@ model User {
   clerkId   String   @unique
   name      String?
   email     String?
+  balance   Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime 
 

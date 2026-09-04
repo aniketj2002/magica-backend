@@ -1,0 +1,86 @@
+[
+  {
+    "id": "dropConstraint.chat.chat_activeRunId_key",
+    "label": "Drop constraint \"chat_activeRunId_key\" on \"chat\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "chat_activeRunId_key",
+        "table": "chat"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"chat_activeRunId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "chat_activeRunId_key",
+          "public",
+          "\"public\".\"chat\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop constraint \"chat_activeRunId_key\"",
+        "sql": "ALTER TABLE \"public\".\"chat\" DROP CONSTRAINT \"chat_activeRunId_key\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"chat_activeRunId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "chat_activeRunId_key",
+          "public",
+          "\"public\".\"chat\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropColumn.chat.activeRunId",
+    "label": "Drop column \"activeRunId\" from \"chat\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "activeRunId",
+        "table": "chat"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"activeRunId\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "chat",
+          "activeRunId"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop column \"activeRunId\"",
+        "sql": "ALTER TABLE \"public\".\"chat\" DROP COLUMN \"activeRunId\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"activeRunId\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "chat",
+          "activeRunId"
+        ]
+      }
+    ]
+  }
+]
