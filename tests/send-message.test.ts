@@ -3,7 +3,6 @@ import { AppError } from '@/lib/errors';
 
 const {
   mockFindIdempotency,
-  mockClaim,
   mockCreateMessage,
   mockCreateRun,
   mockReserve,
@@ -13,7 +12,6 @@ const {
   mockCreateToken,
 } = vi.hoisted(() => ({
   mockFindIdempotency: vi.fn(),
-  mockClaim: vi.fn(),
   mockCreateMessage: vi.fn(),
   mockCreateRun: vi.fn(),
   mockReserve: vi.fn(),
@@ -34,7 +32,6 @@ vi.mock('@/repositories/agentRun.repository', () => ({
 vi.mock('@/repositories/chat.repository', () => ({
   ChatRepository: {
     findByIdForUser: mockFindChat,
-    claimActiveRun: mockClaim,
   },
 }));
 
@@ -44,8 +41,8 @@ vi.mock('@/repositories/message.repository', () => ({
   },
 }));
 
-vi.mock('@/repositories/creditLedger.repository', () => ({
-  CreditLedgerRepository: {
+vi.mock('@/services/credit.service', () => ({
+  CreditService: {
     reserveForRun: mockReserve,
   },
   DEFAULT_RUN_CREDIT_RESERVATION: 1,
@@ -115,16 +112,15 @@ describe('ChatMessageService concurrency + idempotency', () => {
     });
     mockCreateMessage.mockResolvedValue({ id: 'msg-1' });
     mockCreateRun.mockResolvedValue({ id: 'run-1' });
-    mockReserve.mockResolvedValue({ id: 'ledger-1' });
+    mockReserve.mockResolvedValue(undefined);
     mockTrigger.mockResolvedValue({ id: 'triggerrun_1' });
     mockCreateToken.mockResolvedValue('public-token');
     mockSetTrigger.mockResolvedValue(undefined);
     mockFindIdempotency.mockResolvedValue(null);
-    mockClaim.mockResolvedValue(1);
   });
 
-  it('rejects a second concurrent send when the chat lock is held', async () => {
-    mockClaim.mockResolvedValue(0);
+  it('rejects send when credit reservation fails (insufficient balance)', async () => {
+    mockReserve.mockRejectedValue(AppError.paymentRequired());
 
     await expect(
       ChatMessageService.sendMessage({
@@ -133,8 +129,8 @@ describe('ChatMessageService concurrency + idempotency', () => {
         text: 'hello',
       }),
     ).rejects.toMatchObject({
-      code: 'chat_run_active',
-      status: 409,
+      code: 'payment_required',
+      status: 402,
     } satisfies Partial<AppError>);
 
     expect(mockTrigger).not.toHaveBeenCalled();
@@ -180,7 +176,7 @@ describe('ChatMessageService concurrency + idempotency', () => {
     });
 
     expect(mockCreateRun).toHaveBeenCalledOnce();
-    expect(mockClaim).toHaveBeenCalledOnce();
+    expect(mockReserve).toHaveBeenCalledOnce();
     expect(mockTrigger).toHaveBeenCalledOnce();
     expect(result.runId).toBe('run-1');
     expect(result.realtime.publicAccessToken).toBe('public-token');

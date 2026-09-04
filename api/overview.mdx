@@ -1,0 +1,27 @@
+---
+title: API overview
+description: Authenticated v1 surface and webhooks
+---
+
+# API overview
+
+Base path for product APIs: `/api/v1`. All v1 routes require a Clerk session unless noted.
+
+| Method | Path | Notes |
+| --- | --- | --- |
+| `POST` | `/api/v1/chats` | Create chat |
+| `GET` | `/api/v1/chats` | Cursor-paginated list |
+| `GET` | `/api/v1/chats/:chatId` | Chat detail |
+| `GET` | `/api/v1/chats/:chatId/messages` | Newest-first keyset cursor |
+| `POST` | `/api/v1/chats/:chatId/messages` | Send + start run |
+| `GET` | `/api/v1/runs/:runId` | Durable run status |
+| `POST` | `/api/v1/runs/:runId/cancel` | Cancel run |
+| `GET` | `/api/v1/tools` | Registered tools + pricing metadata |
+| `POST` | `/api/v1/tools/:name/estimate` | Estimate credits |
+| `GET` | `/api/v1/credits` | Current balance |
+| `GET` | `/api/v1/credits/usage` | Ledger usage summary |
+| `POST` | `/api/v1/attachments` | PENDING attachment + upload signature |
+| `GET` | `/api/v1/attachments/:id` | Attachment status |
+| `POST` | `/api/webhooks/magica` | Magica run terminal events (Svix) |
+| `POST` | `/api/webhooks/transloadit` | Assembly notification |
+| `POST` | `/api/webhooks/clerk` | Optional user.created sync |

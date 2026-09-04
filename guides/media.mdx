@@ -1,0 +1,23 @@
+---
+title: Media uploads
+description: Transloadit direct upload and R2 mirroring
+---
+
+# Media uploads
+
+Upload bytes never pass through Next.js.
+
+## Direct upload
+
+1. `POST /api/v1/attachments` creates a `PENDING` attachment and returns Transloadit params + signature.
+2. Browser uploads directly to Transloadit → Cloudflare R2.
+3. `POST /api/webhooks/transloadit` marks the attachment `COMPLETED`.
+4. Client can poll `GET /api/v1/attachments/:id` (and reconcile if needed).
+
+## Tool outputs
+
+Magica tool outputs are mirrored under `generated/{userId}/{toolInvocationId}/…` on R2 when mirroring succeeds. If R2 copy fails, the provider URL is returned so a paid tool call still succeeds.
+
+## Async Magica tools
+
+Each node run uses a Trigger waitpoint token, Magica webhook completion, and a `magica-poll` fallback (required for local dev when Magica cannot reach `APP_PUBLIC_URL`).

@@ -111,7 +111,15 @@ vi.mock('@/tools', () => ({
   executeTool: mockExecuteTool,
 }));
 
+vi.mock('@/services/creditReservation.service', () => ({
+  CreditReservationService: {
+    ensureReservation: vi.fn(async () => ({ reservedCredits: 0, topUp: 0 })),
+  },
+}));
+
 import { runAgentLoop } from '@/agent/loop';
+import { InsufficientCreditsError } from '@/lib/credits-errors';
+import { CreditReservationService } from '@/services/creditReservation.service';
 
 function providerFromEvents(
   turns: Array<AsyncIterable<ProviderEvent> | (() => AsyncIterable<ProviderEvent>)>,
@@ -275,6 +283,112 @@ describe('runAgentLoop', () => {
     expect(result.status).toBe('CANCELLED');
     expect(mockFinalize).toHaveBeenCalledWith(
       expect.objectContaining({ status: 'CANCELLED' }),
+    );
+  });
+
+  it('finalizes FAILED with insufficient_credits when a mid-run top-up fails', async () => {
+    vi.mocked(CreditReservationService.ensureReservation).mockRejectedValueOnce(
+      new InsufficientCreditsError(),
+    );
+
+    mockResolveProvider.mockReturnValue(
+      providerFromEvents([
+        events([
+          {
+            type: 'usage',
+            promptTokens: 10,
+            completionTokens: 5,
+            totalTokens: 15,
+          },
+          { type: 'text-delta', text: 'hi' },
+          { type: 'finish', reason: 'stop' },
+        ]),
+      ]),
+    );
+
+    const parts: Array<{ type: string; code?: string }> = [];
+    const result = await runAgentLoop({
+      agentRunId: 'run-1',
+      signal: new AbortController().signal,
+      emit: async (p) => {
+        parts.push(p);
+      },
+    });
+
+    expect(result.status).toBe('FAILED');
+    expect(mockFinalize).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: 'FAILED',
+        errorCode: 'insufficient_credits',
+      }),
+    );
+    expect(parts.some((p) => p.type === 'error' && p.code === 'insufficient_credits')).toBe(
+      true,
+    );
+  });
+
+  it('resumes after a waitpoint-backed tool emits WAITING then COMPLETED progress', async () => {
+    mockExecuteTool.mockImplementation(async (args: {
+      toolCallId: string;
+      emit?: (part: { type: string; id: string; name: string; status: string }) => Promise<void>;
+    }) => {
+      await args.emit?.({
+        type: 'tool-progress',
+        id: args.toolCallId,
+        name: 'crop_image',
+        status: 'WAITING',
+      });
+      await args.emit?.({
+        type: 'tool-progress',
+        id: args.toolCallId,
+        name: 'crop_image',
+        status: 'COMPLETED',
+      });
+      return {
+        ok: true,
+        toolName: 'crop_image',
+        toolCallId: args.toolCallId,
+        invocationId: 'inv-wait',
+        output: { image_url: ['https://media.test.local/out.png'] },
+        estimatedCredits: 1,
+      };
+    });
+
+    mockResolveProvider.mockReturnValue(
+      providerFromEvents([
+        events([
+          {
+            type: 'tool-call',
+            id: 'call-wait',
+            name: 'crop_image',
+            argumentsJson: '{"image_url":"https://example.com/a.png"}',
+          },
+          { type: 'finish', reason: 'tool_calls' },
+        ]),
+        events([
+          { type: 'text-delta', text: 'cropped' },
+          { type: 'finish', reason: 'stop' },
+        ]),
+      ]),
+    );
+
+    const parts: Array<{ type: string; status?: string }> = [];
+    const result = await runAgentLoop({
+      agentRunId: 'run-1',
+      signal: new AbortController().signal,
+      maxTurns: 4,
+      emit: async (p) => {
+        parts.push(p);
+      },
+    });
+
+    expect(result.status).toBe('COMPLETED');
+    expect(mockExecuteTool).toHaveBeenCalledOnce();
+    expect(
+      parts.filter((p) => p.type === 'tool-progress').map((p) => p.status),
+    ).toEqual(['WAITING', 'COMPLETED']);
+    expect(parts).toContainEqual(
+      expect.objectContaining({ type: 'tool-result', id: 'call-wait', ok: true }),
     );
   });
 });

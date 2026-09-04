@@ -1,0 +1,22 @@
+---
+title: Runs
+description: Poll and cancel durable agent runs
+---
+
+# Runs
+
+## Get run
+
+```bash
+GET /api/v1/runs/:runId
+```
+
+Durable status for reconciliation when Realtime drops. Ownership enforced (404 if not yours).
+
+## Cancel run
+
+```bash
+POST /api/v1/runs/:runId/cancel
+```
+
+Cancels via Trigger and/or local finalize depending on run state.

@@ -1,0 +1,67 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "Magica Backend",
+  "colors": {
+    "primary": "#0F766E",
+    "light": "#14B8A6",
+    "dark": "#0D9488"
+  },
+  "favicon": "/favicon.svg",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get started",
+            "pages": [
+              "index",
+              "quickstart",
+              "authentication"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/architecture",
+              "guides/agent-runs",
+              "guides/credits",
+              "guides/media"
+            ]
+          },
+          {
+            "group": "API reference",
+            "pages": [
+              "api/overview",
+              "api/chats",
+              "api/messages",
+              "api/runs",
+              "api/tools",
+              "api/credits",
+              "api/attachments",
+              "api/webhooks"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "GitHub",
+        "href": "https://github.com/aniketj2002/magica-backend"
+      }
+    ]
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/aniketj2002/magica-backend"
+    }
+  }
+}

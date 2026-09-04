@@ -1,0 +1,53 @@
+---
+title: Messages
+description: List history and send messages that start agent runs
+---
+
+# Messages
+
+## List messages
+
+```bash
+GET /api/v1/chats/:chatId/messages?limit=20&cursor=...
+```
+
+Newest-first keyset pagination. `limit` is int 1–100.
+
+## Send message
+
+```bash
+POST /api/v1/chats/:chatId/messages
+```
+
+**Headers**
+
+| Header | Required | Notes |
+| --- | --- | --- |
+| `Idempotency-Key` | No | Safe retries without duplicate runs |
+
+**Body**
+
+```json
+{
+  "text": "required, 1–100000 chars",
+  "modelId": "optional; only openrouter/free is allowed",
+  "attachmentIds": ["optional uuid array, max 20"]
+}
+```
+
+Returns **201** with roughly:
+
+```json
+{
+  "chatId": "...",
+  "messageId": "...",
+  "runId": "...",
+  "realtime": {
+    "runId": "...",
+    "streamId": "...",
+    "publicAccessToken": "..."
+  }
+}
+```
+
+The server commits the user message + `AgentRun`, claims `Chat.activeRunId`, reserves credits, and triggers the agent task (`idempotencyKey = runId`).

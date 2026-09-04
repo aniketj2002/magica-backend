@@ -1,0 +1,22 @@
+---
+title: Authentication
+description: Clerk sessions and ownership rules
+---
+
+# Authentication
+
+All `/api/v1/*` routes use **Clerk** session authentication via the `withRoute` wrapper.
+
+## Rules
+
+- Clerk session → local `User` (JIT-created on first request).
+- Client-supplied `userId` is **never** trusted.
+- Missing or foreign resources return **404**, never 403.
+
+## CORS
+
+Browser origins are controlled by `CORS_ALLOWED_ORIGINS` (comma-separated). Default is `http://localhost:3000`. Allowed methods include `GET`, `POST`, `OPTIONS`. Headers include `Authorization`, `Content-Type`, and `Idempotency-Key`.
+
+## Idempotency
+
+`POST /api/v1/chats/:chatId/messages` accepts an optional `Idempotency-Key` header so clients can safely retry send without duplicating runs.

@@ -1,0 +1,36 @@
+---
+title: Webhooks
+description: Magica, Transloadit, and Clerk callbacks
+---
+
+# Webhooks
+
+These routes are **not** Clerk-session authenticated. They verify provider signatures instead.
+
+## Magica
+
+```bash
+POST /api/webhooks/magica
+```
+
+Svix-signed Magica run terminal events. Completes the Trigger wait token for async tools. Requires `MAGICA_WEBHOOK_SIGNING_SECRET`.
+
+## Transloadit
+
+```bash
+POST /api/webhooks/transloadit
+```
+
+Signed assembly notification → marks `Attachment` as `COMPLETED`.
+
+## Clerk
+
+```bash
+POST /api/webhooks/clerk
+```
+
+Optional `user.created` sync. Requires `CLERK_WEBHOOK_SECRET`.
+
+## Local development
+
+When Magica cannot reach `APP_PUBLIC_URL`, the `magica-poll` Trigger task is the fallback so waitpoints still complete.

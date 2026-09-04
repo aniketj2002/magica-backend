@@ -1,0 +1,293 @@
+[
+  {
+    "id": "column.public.agentRun.reservedCredits",
+    "label": "Add column \"reservedCredits\" to \"agentRun\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "reservedCredits",
+        "table": "agentRun"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"reservedCredits\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "agentRun",
+          "reservedCredits"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"reservedCredits\"",
+        "sql": "ALTER TABLE \"public\".\"agentRun\" ADD COLUMN \"reservedCredits\" int4 DEFAULT 0 NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"reservedCredits\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "agentRun",
+          "reservedCredits"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.agentRun.settledCredits",
+    "label": "Add column \"settledCredits\" to \"agentRun\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "settledCredits",
+        "table": "agentRun"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"settledCredits\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "agentRun",
+          "settledCredits"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"settledCredits\"",
+        "sql": "ALTER TABLE \"public\".\"agentRun\" ADD COLUMN \"settledCredits\" int4 DEFAULT 0 NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"settledCredits\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "agentRun",
+          "settledCredits"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.toolInvocation.actualMicrocredits",
+    "label": "Add column \"actualMicrocredits\" to \"toolInvocation\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "actualMicrocredits",
+        "table": "toolInvocation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"actualMicrocredits\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "toolInvocation",
+          "actualMicrocredits"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"actualMicrocredits\"",
+        "sql": "ALTER TABLE \"public\".\"toolInvocation\" ADD COLUMN \"actualMicrocredits\" int4"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"actualMicrocredits\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "toolInvocation",
+          "actualMicrocredits"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.toolInvocation.estimatedMicrocredits",
+    "label": "Add column \"estimatedMicrocredits\" to \"toolInvocation\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "estimatedMicrocredits",
+        "table": "toolInvocation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"estimatedMicrocredits\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "toolInvocation",
+          "estimatedMicrocredits"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"estimatedMicrocredits\"",
+        "sql": "ALTER TABLE \"public\".\"toolInvocation\" ADD COLUMN \"estimatedMicrocredits\" int4"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"estimatedMicrocredits\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "toolInvocation",
+          "estimatedMicrocredits"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.toolInvocation.subModelId",
+    "label": "Add column \"subModelId\" to \"toolInvocation\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "subModelId",
+        "table": "toolInvocation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"subModelId\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "toolInvocation",
+          "subModelId"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"subModelId\"",
+        "sql": "ALTER TABLE \"public\".\"toolInvocation\" ADD COLUMN \"subModelId\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"subModelId\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "toolInvocation",
+          "subModelId"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.toolInvocation.waitpointToken",
+    "label": "Add column \"waitpointToken\" to \"toolInvocation\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "waitpointToken",
+        "table": "toolInvocation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"waitpointToken\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "toolInvocation",
+          "waitpointToken"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"waitpointToken\"",
+        "sql": "ALTER TABLE \"public\".\"toolInvocation\" ADD COLUMN \"waitpointToken\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"waitpointToken\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "toolInvocation",
+          "waitpointToken"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.toolInvocation.toolInvocation_providerRunId_idx_c8aef772",
+    "label": "Create index \"toolInvocation_providerRunId_idx_c8aef772\" on \"toolInvocation\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "toolInvocation_providerRunId_idx_c8aef772",
+        "table": "toolInvocation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"toolInvocation_providerRunId_idx_c8aef772\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"toolInvocation_providerRunId_idx_c8aef772\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"toolInvocation_providerRunId_idx_c8aef772\"",
+        "sql": "CREATE INDEX \"toolInvocation_providerRunId_idx_c8aef772\" ON \"public\".\"toolInvocation\" (\"providerRunId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"toolInvocation_providerRunId_idx_c8aef772\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"toolInvocation_providerRunId_idx_c8aef772\""
+        ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,41 @@
+---
+title: Chats
+description: Create, list, and fetch chats
+---
+
+# Chats
+
+## Create chat
+
+```bash
+POST /api/v1/chats
+```
+
+**Body**
+
+```json
+{
+  "title": "optional title, 1–200 chars"
+}
+```
+
+`title` is optional (nullable). Returns **201** with the created chat.
+
+## List chats
+
+```bash
+GET /api/v1/chats?limit=20&cursor=...
+```
+
+| Query | Type | Notes |
+| --- | --- | --- |
+| `limit` | int 1–100 | Optional page size |
+| `cursor` | string | Optional keyset cursor |
+
+## Get chat
+
+```bash
+GET /api/v1/chats/:chatId
+```
+
+`:chatId` must be a UUID. Foreign or missing chats return **404**.

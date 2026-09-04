@@ -1,0 +1,31 @@
+---
+title: Tools
+description: List Magica tools and estimate credit cost
+---
+
+# Tools
+
+Registered tools include `crop_image`, `gpt_image_2`, and `merge_videos`.
+
+## List tools
+
+```bash
+GET /api/v1/tools
+```
+
+Returns registered tools plus Magica catalog/pricing metadata.
+
+## Estimate
+
+```bash
+POST /api/v1/tools/:name/estimate
+```
+
+Validates tool input and returns:
+
+```json
+{
+  "microcredits": 0,
+  "credits": 0
+}
+```

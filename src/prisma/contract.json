@@ -351,6 +351,20 @@
                   "kind": "scalar"
                 }
               },
+              "reservedCredits": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "settledCredits": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
               "startedAt": {
                 "nullable": true,
                 "type": {
@@ -579,6 +593,12 @@
                 },
                 "promptTokens": {
                   "column": "promptTokens"
+                },
+                "reservedCredits": {
+                  "column": "reservedCredits"
+                },
+                "settledCredits": {
+                  "column": "settledCredits"
                 },
                 "startedAt": {
                   "column": "startedAt"
@@ -1640,6 +1660,13 @@
                   "kind": "scalar"
                 }
               },
+              "actualMicrocredits": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
               "agentRunId": {
                 "nullable": false,
                 "type": {
@@ -1690,6 +1717,13 @@
                 }
               },
               "estimatedCredits": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "estimatedMicrocredits": {
                 "nullable": true,
                 "type": {
                   "codecId": "pg/int4@1",
@@ -1765,8 +1799,22 @@
                   "plane": "domain"
                 }
               },
+              "subModelId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "toolName": {
                 "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "waitpointToken": {
+                "nullable": true,
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
@@ -1855,6 +1903,9 @@
                 "actualCredits": {
                   "column": "actualCredits"
                 },
+                "actualMicrocredits": {
+                  "column": "actualMicrocredits"
+                },
                 "agentRunId": {
                   "column": "agentRunId"
                 },
@@ -1878,6 +1929,9 @@
                 },
                 "estimatedCredits": {
                   "column": "estimatedCredits"
+                },
+                "estimatedMicrocredits": {
+                  "column": "estimatedMicrocredits"
                 },
                 "id": {
                   "column": "id"
@@ -1906,8 +1960,14 @@
                 "status": {
                   "column": "status"
                 },
+                "subModelId": {
+                  "column": "subModelId"
+                },
                 "toolName": {
                   "column": "toolName"
+                },
+                "waitpointToken": {
+                  "column": "waitpointToken"
                 }
               },
               "namespaceId": "public",
@@ -2310,6 +2370,24 @@
                   "codecId": "pg/int4@1",
                   "nativeType": "int4",
                   "nullable": true
+                },
+                "reservedCredits": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 0
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "settledCredits": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 0
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
                 },
                 "startedAt": {
                   "codecId": "pg/timestamptz-temporal@1",
@@ -3314,6 +3392,11 @@
                   "nativeType": "int4",
                   "nullable": true
                 },
+                "actualMicrocredits": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": true
+                },
                 "agentRunId": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
@@ -3354,6 +3437,11 @@
                   "nullable": true
                 },
                 "estimatedCredits": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": true
+                },
+                "estimatedMicrocredits": {
                   "codecId": "pg/int4@1",
                   "nativeType": "int4",
                   "nullable": true
@@ -3409,10 +3497,20 @@
                     "plane": "storage"
                   }
                 },
+                "subModelId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
                 "toolName": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
                   "nullable": false
+                },
+                "waitpointToken": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
                 }
               },
               "foreignKeys": [
@@ -3488,6 +3586,14 @@
                   ],
                   "name": "toolInvocation_messageId_idx_3cdded8d",
                   "prefix": "toolInvocation_messageId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "providerRunId"
+                  ],
+                  "name": "toolInvocation_providerRunId_idx_c8aef772",
+                  "prefix": "toolInvocation_providerRunId_idx",
                   "unique": false
                 }
               ],
@@ -3764,7 +3870,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "0bcdc3aefc95316b7c7e9051407e62ae8ff6d33f5f14327b5ac2069010ff4f9a"
+    "storageHash": "c84e756f34f572a8c4416b4e090ab3421ecf633c84bb6264c3e0da7b06ce7b9c"
   },
   "execution": {
     "executionHash": "f130d18dbd43bfbf2cac8cf439afff6e5e2e248902409901e3bace7fdfb7e2e5",

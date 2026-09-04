@@ -20,6 +20,7 @@ const listQuerySchema = z.object({
 const sendBodySchema = z.object({
   text: z.string().min(1).max(100_000),
   modelId: z.string().min(1).optional(),
+  attachmentIds: z.array(z.string().uuid()).max(20).optional(),
 });
 
 export const GET = withRoute(
@@ -45,6 +46,7 @@ export const POST = withRoute(
       text: body.text,
       modelId: body.modelId,
       idempotencyKey,
+      attachmentIds: body.attachmentIds,
     });
     return jsonOk(result, { status: 201 });
   },

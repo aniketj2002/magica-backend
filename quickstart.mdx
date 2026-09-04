@@ -1,0 +1,71 @@
+---
+title: Quickstart
+description: Run magica-backend locally
+---
+
+# Quickstart
+
+## 1. Dependencies
+
+```bash
+npm install
+```
+
+## 2. Environment
+
+```bash
+cp .env.example .env
+```
+
+Fill in Clerk, OpenRouter, and Trigger.dev values. `DATABASE_URL` must point at PostgreSQL 15+.
+
+For Magica tools, media upload, and R2 mirroring also set `MAGICA_*`, `TRANSLOADIT_*`, `R2_*`, and `APP_PUBLIC_URL`. The app boots without them; helpers fail only when a code path needs the integration.
+
+### Required for core chat
+
+| Variable | Purpose |
+| --- | --- |
+| `DATABASE_URL` | PostgreSQL 15+ |
+| `CLERK_SECRET_KEY` | Server auth |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk client |
+| `OPENROUTER_API_KEY` | LLM calls |
+| `TRIGGER_PROJECT_REF` | Trigger.dev project |
+| `TRIGGER_SECRET_KEY` | Task dispatch + Realtime tokens |
+
+### Optional integrations
+
+| Variable | Purpose |
+| --- | --- |
+| `MAGICA_API_KEY` | Magica tools (`crop_image`, `gpt_image_2`, `merge_videos`) |
+| `MAGICA_WEBHOOK_SIGNING_SECRET` | Svix verify for Magica webhooks |
+| `TRANSLOADIT_*` / `R2_*` | Direct upload + output mirroring |
+| `APP_PUBLIC_URL` | Webhook callback base (default local: `http://localhost:3001`) |
+| `CORS_ALLOWED_ORIGINS` | Browser origins (default `http://localhost:3000`) |
+
+## 3. Database
+
+```bash
+docker compose up -d
+npx prisma migration status
+```
+
+Apply migrations with your usual Prisma Next workflow for this repo.
+
+## 4. App + worker
+
+Run Next.js and the Trigger.dev worker side by side:
+
+```bash
+npm run dev
+npx trigger.dev@latest dev
+```
+
+The API listens on **port 3001** by default.
+
+Without the Trigger worker, `POST /api/v1/chats/:id/messages` still commits the user message and `AgentRun`, but the run stays `QUEUED` until a worker (or the reconcile sweeper) dispatches it.
+
+## 5. Tests
+
+```bash
+npm test
+```

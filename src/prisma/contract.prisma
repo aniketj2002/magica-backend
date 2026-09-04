@@ -26,6 +26,9 @@ model AgentRun {
   promptTokens     Int?
   completionTokens Int?
   totalTokens      Int?
+
+  reservedCredits  Int      @default(0)
+  settledCredits   Int      @default(0)
   
   metadata       Json?
   
@@ -263,10 +266,16 @@ model ToolInvocation {
   provider      String?
   providerRunId String?
   
+  subModelId String?
+  
   durationMs    Int?
   
   estimatedCredits Int?
   actualCredits    Int?
+  estimatedMicrocredits Int?
+  actualMicrocredits    Int?
+  
+  waitpointToken String?
   
   errorCode     String?
   errorMessage  String?
@@ -283,6 +292,8 @@ model ToolInvocation {
   
   generatedAssets GeneratedAsset[]
   creditLedgers   CreditLedger[]
+
+  @@index([providerRunId])
 }
 
 
@@ -321,4 +332,6 @@ model Waitpoint {
   updatedAt  DateTime 
 
   agentRun AgentRun @relation(fields: [agentRunId], references: [id])
+
+  @@index([agentRunId])
 }

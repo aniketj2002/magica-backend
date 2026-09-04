@@ -1,0 +1,33 @@
+---
+title: Attachments
+description: Create direct uploads and poll status
+---
+
+# Attachments
+
+## Create upload
+
+```bash
+POST /api/v1/attachments
+```
+
+**Body**
+
+```json
+{
+  "chatId": "uuid",
+  "originalName": "photo.png",
+  "mimeType": "image/png",
+  "sizeBytes": 12345
+}
+```
+
+`sizeBytes` is optional (nonnegative int). Returns **201** with a `PENDING` attachment and Transloadit params + signature for browser → R2 upload.
+
+## Get attachment
+
+```bash
+GET /api/v1/attachments/:id
+```
+
+Poll until status is `COMPLETED` (driven by the Transloadit webhook).

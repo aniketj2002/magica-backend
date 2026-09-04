@@ -1,0 +1,28 @@
+---
+title: Credits API
+description: Balance and usage ledger
+---
+
+# Credits API
+
+## Balance
+
+```bash
+GET /api/v1/credits
+```
+
+```json
+{
+  "balance": 0
+}
+```
+
+## Usage
+
+```bash
+GET /api/v1/credits/usage
+```
+
+Ledger usage summary for the authenticated user.
+
+See [Credits guide](/guides/credits) for progressive reservation behavior.

@@ -1,0 +1,26 @@
+---
+title: Agent runs
+description: Send a message, stream progress, cancel or reconcile
+---
+
+# Agent runs
+
+Sending a message creates a durable `AgentRun` and dispatches a Trigger.dev task.
+
+## Happy path
+
+1. Client calls `POST /api/v1/chats/:chatId/messages` with `text` (and optional `attachmentIds`, `modelId`).
+2. Response includes `runId` plus Realtime credentials (`publicAccessToken`, stream id).
+3. The `agent-run` task restores context from Postgres, runs the tool-enabled loop, checkpoints assistant message blocks, and finalizes status.
+4. Clients can poll `GET /api/v1/runs/:runId` at any time — Realtime is a projection, not the source of truth.
+
+## Cancel
+
+`POST /api/v1/runs/:runId/cancel` cancels via Trigger and/or local finalize.
+
+## Failure windows
+
+A reconcile sweeper covers:
+
+- Post-commit / pre-dispatch crashes (`QUEUED` without `triggerRunId`)
+- Stale `RUNNING` heartbeats
