@@ -1,0 +1,110 @@
+{
+  "version": 1,
+  "fingerprint": "4a112119f6e9b3ce",
+  "recordedAt": "2026-09-05T09:46:50.124Z",
+  "updatedAt": "2026-09-05T09:51:28.603Z",
+  "steps": [
+    {
+      "op": "estimate-credits",
+      "method": "POST",
+      "path": "/v1/nodes/estimate-credits",
+      "requestBody": {
+        "nodes": [
+          {
+            "type": "gpt_image_2",
+            "data": {
+              "prompt": "A breathtaking mountain landscape featuring majestic snow-capped peaks rising dramatically against a sky filled with swirling, dramatic clouds. The warm golden-hour sunlight bathes the entire scene in rich amber and orange tones, casting long shadows and highlighting the rugged textures of the mountains. In the valleys below, lush green forests and alpine meadows stretch across the landscape, with winding rivers reflecting the golden light. The atmosphere is serene yet powerful, with the interplay of light and shadow creating incredible depth and drama. Photorealistic, ultra-high detail, cinematic composition.",
+              "size": "1024x1024",
+              "quality": "high",
+              "n": 1
+            },
+            "subModelId": "gpt-image-2-text"
+          }
+        ]
+      },
+      "status": 200,
+      "responseBody": {
+        "estimates": [
+          {
+            "microcredits": 210720
+          }
+        ]
+      },
+      "recordedAt": "2026-09-05T09:51:28.603Z"
+    },
+    {
+      "op": "run",
+      "method": "POST",
+      "path": "/v1/nodes/gpt_image_2/run",
+      "requestBody": {
+        "input": {
+          "prompt": "A breathtaking mountain landscape featuring majestic snow-capped peaks rising dramatically against a sky filled with swirling, dramatic clouds. The warm golden-hour sunlight bathes the entire scene in rich amber and orange tones, casting long shadows and highlighting the rugged textures of the mountains. In the valleys below, lush green forests and alpine meadows stretch across the landscape, with winding rivers reflecting the golden light. The atmosphere is serene yet powerful, with the interplay of light and shadow creating incredible depth and drama. Photorealistic, ultra-high detail, cinematic composition.",
+          "size": "1024x1024",
+          "quality": "high",
+          "n": 1
+        },
+        "subModelId": "gpt-image-2-text"
+      },
+      "status": 202,
+      "responseBody": {
+        "runId": "cmto784s3005rl7041onl3a4z"
+      },
+      "recordedAt": "2026-09-05T09:47:03.584Z"
+    },
+    {
+      "op": "get-run",
+      "method": "GET",
+      "path": "/v1/nodes/runs/cmto784s3005rl7041onl3a4z",
+      "status": 200,
+      "responseBody": {
+        "id": "cmto784s3005rl7041onl3a4z",
+        "nodeType": "gpt_image_2",
+        "subModelId": "gpt-image-2-text",
+        "status": "COMPLETED",
+        "input": {
+          "n": 1,
+          "size": "1024x1024",
+          "prompt": "A breathtaking mountain landscape featuring majestic snow-capped peaks rising dramatically against a sky filled with swirling, dramatic clouds. The warm golden-hour sunlight bathes the entire scene in rich amber and orange tones, casting long shadows and highlighting the rugged textures of the mountains. In the valleys below, lush green forests and alpine meadows stretch across the landscape, with winding rivers reflecting the golden light. The atmosphere is serene yet powerful, with the interplay of light and shadow creating incredible depth and drama. Photorealistic, ultra-high detail, cinematic composition.",
+          "quality": "High",
+          "background": "Auto",
+          "output_format": "PNG",
+          "output_compression": 80
+        },
+        "output": {
+          "result": [
+            "https://g.tlcdn.com/gen/5b9bbdf17a424a9ea38f9ea1ba6f4dbe.png"
+          ],
+          "provider": "openai",
+          "creditUsed": 210720,
+          "resultMetadata": [
+            {
+              "size": 2004932,
+              "width": 1024,
+              "height": 1024,
+              "modelId": "gpt-image-2",
+              "mimeType": "image/png",
+              "mediaType": "image"
+            }
+          ]
+        },
+        "error": null,
+        "userMessage": null,
+        "creditUsed": 210720,
+        "triggerRunId": "run_06g71tn3l48b0g6foe7psffi01",
+        "source": "api",
+        "createdAt": "2026-09-05T09:47:02.835Z"
+      },
+      "recordedAt": "2026-09-05T09:50:44.080Z"
+    }
+  ],
+  "chain": {
+    "nodeType": "gpt_image_2",
+    "subModelId": "gpt-image-2-text",
+    "input": {
+      "prompt": "A breathtaking mountain landscape featuring majestic snow-capped peaks rising dramatically against a sky filled with swirling, dramatic clouds. The warm golden-hour sunlight bathes the entire scene in rich amber and orange tones, casting long shadows and highlighting the rugged textures of the mountains. In the valleys below, lush green forests and alpine meadows stretch across the landscape, with winding rivers reflecting the golden light. The atmosphere is serene yet powerful, with the interplay of light and shadow creating incredible depth and drama. Photorealistic, ultra-high detail, cinematic composition.",
+      "size": "1024x1024",
+      "quality": "high",
+      "n": 1
+    }
+  }
+}

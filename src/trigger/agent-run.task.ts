@@ -52,6 +52,22 @@ export const agentRunTask = schemaTask({
     useTriggerLogger(true);
     const log = createLogger({ runId: agentRunId, traceId: ctx.run.id });
 
+    const existing = await db.orm.public.AgentRun.where({ id: agentRunId }).first();
+    if (!existing) {
+      log.warn('agent run missing at task start');
+      return { status: 'FAILED' as const, agentRunId };
+    }
+    // Cancel finalizes in Postgres while Magica waitpoints leave the Trigger
+    // run suspended — if we resume after that, bail without rewriting state.
+    if (
+      existing.status === 'COMPLETED' ||
+      existing.status === 'FAILED' ||
+      existing.status === 'CANCELLED'
+    ) {
+      log.info('agent run already terminal; skipping', { status: existing.status });
+      return { status: existing.status, agentRunId };
+    }
+
     // Persist Trigger run id for Realtime tokens / cancellation.
     await db.orm.public.AgentRun.where({ id: agentRunId }).update({
       triggerRunId: ctx.run.id,

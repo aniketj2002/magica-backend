@@ -65,7 +65,7 @@ Trigger agent-run task
   → restore context from Postgres
   → provider-neutral agent loop (OpenRouter adapter today)
   → tool calls → Magica estimate-credits → progressive ensureReservation
-  → wait.createToken + Magica run (webhook) + magica-poll fallback
+  → wait.createToken + Magica run + magica-poll (every 20s; no Magica webhook)
   → wait.forToken → mirror outputs to R2 → settle CHARGE once
   → streams.define("agent") parts for Realtime
   → checkpoint Message content blocks
@@ -106,9 +106,8 @@ balance cannot cover the next tool or model hold). Completed tools settle with
 an idempotent `CHARGE` (`charge:tool:{toolInvocationId}`); finalize releases
 `reservedCredits - settledCredits`.
 
-**Async Magica tools:** each node run uses a Trigger waitpoint token, Magica
-webhook completion, and a `magica-poll` fallback (required for local dev when
-Magica cannot reach `APP_PUBLIC_URL`). Tool output URLs returned to the model
+**Async Magica tools:** each node run uses a Trigger waitpoint token and
+`magica-poll` every 20s (Magica does not deliver webhooks). Tool output URLs returned to the model
 are durable R2 URLs when mirroring succeeds.
 
 ## Trade-offs
@@ -123,7 +122,7 @@ are durable R2 URLs when mirroring succeeds.
   policy so a paid model later needs no loop changes. Exact microcredits stay
   on `ToolInvocation` for auditability.
 - **Waitpoint + poll, not long-polling in the agent task.** The agent suspends
-  on `wait.forToken`; webhook and poller race safely (`completeToken` is a
+  on `wait.forToken`; the poller completes the token (`completeToken` is a
   no-op when already completed).
 - **Browser → Transloadit → R2.** Upload bytes never pass through Next.js;
   Magica output mirroring falls back to the provider URL if R2 copy fails so a

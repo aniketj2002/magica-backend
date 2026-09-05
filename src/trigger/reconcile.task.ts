@@ -16,9 +16,10 @@ export const QUEUED_ORPHAN_MS = 60 * 1000;
 const BATCH_LIMIT = 50;
 
 /**
- * Sweeper closing the two durability gaps:
+ * Sweeper closing durability gaps:
  * 1. QUEUED with no triggerRunId (died between commit and dispatch) → re-dispatch
  * 2. RUNNING past heartbeat threshold → fail + clear chat lock
+ * 3. STOPPING left behind (cancel while suspended on waitpoint; onCancel never runs)
  */
 export const reconcileAgentRunsTask = schedules.task({
   id: 'reconcile-agent-runs',
@@ -38,9 +39,10 @@ export const reconcileAgentRunsTask = schedules.task({
 
     const redispatched = await redispatchOrphans(orphanCutoff, log);
     const failed = await failStaleRuns(staleCutoff, log);
+    const cancelledStopping = await failStuckStopping(staleCutoff, log);
 
-    log.info('reconcile complete', { redispatched, failed });
-    return { redispatched, failed };
+    log.info('reconcile complete', { redispatched, failed, cancelledStopping });
+    return { redispatched, failed, cancelledStopping };
   },
 });
 
@@ -123,6 +125,44 @@ async function failStaleRuns(
       log.warn('failed stale agent run', { runId: run.id, chatId: run.chatId });
     } catch (error) {
       log.error('failed to finalize stale agent run', {
+        runId: run.id,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
+  return count;
+}
+
+/**
+ * Cancel left STOPPING while the Trigger run was suspended on a wait token —
+ * onCancel never ran. Finalize those as CANCELLED.
+ */
+async function failStuckStopping(
+  cutoff: Temporal.Instant,
+  log: ReturnType<typeof createLogger>,
+): Promise<number> {
+  const stuck = await db.orm.public.AgentRun.where({ status: 'STOPPING' })
+    .where((r) => r.updatedAt.lt(cutoff))
+    .orderBy((r) => r.updatedAt.asc())
+    .limit(BATCH_LIMIT)
+    .all();
+
+  let count = 0;
+  for (const run of stuck) {
+    try {
+      await finalizeAgentRun({
+        agentRunId: run.id,
+        status: 'CANCELLED',
+        errorCode: 'cancelled',
+        errorMessage: 'Run cancelled',
+      });
+      count += 1;
+      log.warn('finalized stuck STOPPING agent run', {
+        runId: run.id,
+        chatId: run.chatId,
+      });
+    } catch (error) {
+      log.error('failed to finalize STOPPING agent run', {
         runId: run.id,
         error: error instanceof Error ? error.message : String(error),
       });

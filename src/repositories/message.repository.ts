@@ -98,6 +98,17 @@ export const MessageRepository = {
   },
 
   async updateStreamingContent(messageId: string, content: ContentBlock[]) {
+    const existing = await db.orm.public.Message.where({ id: messageId }).first();
+    // Cancel/finalize may have already closed the message while a Magica wait
+    // was suspended — never resurrect STREAMING after a terminal status.
+    if (
+      existing &&
+      (existing.status === 'COMPLETED' ||
+        existing.status === 'FAILED' ||
+        existing.status === 'CANCELLED')
+    ) {
+      return existing;
+    }
     return await db.orm.public.Message.where({ id: messageId }).update({
       content: asJson(content),
       status: 'STREAMING',

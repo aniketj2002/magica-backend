@@ -3,7 +3,12 @@ import { createLogger } from '@/lib/logger';
 import { AgentRunRepository } from '@/repositories/agentRun.repository';
 import { MessageRepository } from '@/repositories/message.repository';
 import { CreditService } from '@/services/credit.service';
-import type { ContentBlock } from './content';
+import { db } from '@/prisma/db';
+import {
+  closeOpenToolUses,
+  parseContentBlocks,
+  type ContentBlock,
+} from './content';
 
 export type TerminalRunStatus = 'COMPLETED' | 'FAILED' | 'CANCELLED';
 
@@ -80,9 +85,11 @@ export async function finalizeAgentRun(args: FinalizeArgs): Promise<FinalizeResu
     heartbeatAt: completedAt,
   });
 
-  const assistantMessageId = args.assistantMessageId ?? 
-    (await MessageRepository.findLastAssistantMessageForRun(run.id))?.id ?? null;
-    
+  const assistantMessageId =
+    args.assistantMessageId ??
+    (await MessageRepository.findLastAssistantMessageForRun(run.id))?.id ??
+    null;
+
   if (assistantMessageId) {
     const messageStatus =
       args.status === 'COMPLETED'
@@ -91,12 +98,35 @@ export async function finalizeAgentRun(args: FinalizeArgs): Promise<FinalizeResu
           ? 'CANCELLED'
           : 'FAILED';
 
+    let content = args.content;
+    if (content === undefined) {
+      const existing = await MessageRepository.findById(assistantMessageId);
+      content = parseContentBlocks(existing?.content);
+    }
+
+    if (
+      content &&
+      (args.status === 'CANCELLED' || args.status === 'FAILED')
+    ) {
+      content = closeOpenToolUses(content, {
+        content: {
+          error: args.errorCode ?? args.status.toLowerCase(),
+          message:
+            args.errorMessage ??
+            (args.status === 'CANCELLED' ? 'Run cancelled' : 'Run failed'),
+        },
+        isError: true,
+      });
+    }
+
     await MessageRepository.updateMessageStatus(
-      assistantMessageId, 
-      messageStatus, 
-      args.content
+      assistantMessageId,
+      messageStatus,
+      content,
     );
   }
+
+  await cancelInFlightToolWork(run.id, args);
 
   await CreditService.finalizeRunBilling(
     run.userId,
@@ -112,4 +142,34 @@ export async function finalizeAgentRun(args: FinalizeArgs): Promise<FinalizeResu
     status: args.status,
     alreadyTerminal: false,
   };
+}
+
+/** Mark RUNNING/QUEUED tool invocations and pending waitpoints as cancelled. */
+async function cancelInFlightToolWork(
+  agentRunId: string,
+  args: FinalizeArgs,
+): Promise<void> {
+  if (args.status === 'COMPLETED') return;
+
+  const completedAt = now();
+  const errorCode = args.errorCode ?? args.status.toLowerCase();
+  const errorMessage =
+    args.errorMessage ??
+    (args.status === 'CANCELLED' ? 'Run cancelled' : 'Run failed');
+
+  await db.orm.public.ToolInvocation.where({ agentRunId })
+    .where((t) => t.status.in(['QUEUED', 'RUNNING']))
+    .update({
+      status: args.status === 'CANCELLED' ? 'CANCELLED' : 'FAILED',
+      errorCode,
+      errorMessage,
+      completedAt,
+    });
+
+  await db.orm.public.Waitpoint.where({ agentRunId })
+    .where({ status: 'PENDING' })
+    .update({
+      status: args.status === 'CANCELLED' ? 'CANCELLED' : 'EXPIRED',
+      updatedAt: completedAt,
+    });
 }

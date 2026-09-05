@@ -168,6 +168,18 @@ async function openLoop(args: RunAgentLoopArgs): Promise<LoopContext> {
     });
   }
 
+  if (
+    run.status === 'COMPLETED' ||
+    run.status === 'FAILED' ||
+    run.status === 'CANCELLED'
+  ) {
+    throw new ProviderError(
+      'invalid_request',
+      `AgentRun ${run.id} is already ${run.status}`,
+      { retryable: false },
+    );
+  }
+
   const modelId = run.modelRequested;
   if (!modelId) {
     throw new ProviderError('invalid_request', 'AgentRun has no modelRequested', {
@@ -390,8 +402,18 @@ async function runToolCalls(
       id: call.id,
       name: call.name,
       ok: result.ok,
-      output: result.ok ? result.output : undefined,
+      output: result.ok
+        ? result.output
+        : { error: result.errorCode, message: result.errorMessage },
     });
+    if (!result.ok) {
+      await emit(args, {
+        type: 'tool-progress',
+        id: call.id,
+        name: call.name,
+        status: 'FAILED',
+      });
+    }
     await checkpoint(ctx.assistantMessageId, state.blocks);
     await heartbeat(ctx.run.id, state.turnCount);
   }

@@ -4,8 +4,6 @@ import { createLogger } from '@/lib/logger';
 import { instantToIso } from '@/lib/cursor';
 import { finalizeAgentRun } from '@/agent/finalize';
 import { AgentRunRepository } from '@/repositories/agentRun.repository';
-import { now } from '@/lib/temporal';
-import { db } from '@/prisma/db';
 import { agentStream } from '@/trigger/streams';
 
 const TERMINAL_STATUSES = new Set(['COMPLETED', 'FAILED', 'CANCELLED']);
@@ -24,8 +22,10 @@ export const AgentRunService = {
   },
 
   /**
-   * Cancel a run. Prefers Trigger `runs.cancel` when a trigger run id exists;
-   * otherwise finalizes CANCELLED locally (QUEUED orphan / pre-dispatch).
+   * Cancel a run. Always finalizes CANCELLED in Postgres immediately —
+   * Trigger `onCancel` does **not** run while a task is suspended on a
+   * waitpoint token (Magica tools), so relying on it leaves STOPPING forever.
+   * Still calls `runs.cancel` so Trigger abandons the suspended execution.
    */
   async cancelRun(runId: string, userId: string) {
     const run = await AgentRunRepository.findByIdForUser(runId, userId);
@@ -37,32 +37,21 @@ export const AgentRunService = {
 
     const log = createLogger({ runId: run.id, chatId: run.chatId });
 
+    await finalizeAgentRun({
+      agentRunId: run.id,
+      status: 'CANCELLED',
+      errorCode: 'cancelled',
+      errorMessage: 'Run cancelled',
+    });
+
     if (run.triggerRunId) {
-      // Mark STOPPING so clients see intent while Trigger delivers onCancel.
-      await db.orm.public.AgentRun.where({ id: run.id }).update({
-        status: 'STOPPING',
-        updatedAt: now(),
-      });
       try {
         await runs.cancel(run.triggerRunId);
       } catch (error) {
-        log.warn('trigger cancel failed; finalizing locally', {
+        log.warn('trigger cancel failed after local finalize', {
           error: error instanceof Error ? error.message : String(error),
         });
-        await finalizeAgentRun({
-          agentRunId: run.id,
-          status: 'CANCELLED',
-          errorCode: 'cancelled',
-          errorMessage: 'Run cancelled',
-        });
       }
-    } else {
-      await finalizeAgentRun({
-        agentRunId: run.id,
-        status: 'CANCELLED',
-        errorCode: 'cancelled',
-        errorMessage: 'Run cancelled',
-      });
     }
 
     const refreshed = await AgentRunRepository.findById(run.id);

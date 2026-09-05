@@ -1,10 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AppError } from '@/lib/errors';
 
-const { mockFindRun, mockCreatePublicToken } = vi.hoisted(() => ({
-  mockFindRun: vi.fn(),
-  mockCreatePublicToken: vi.fn(async () => 'public-token'),
-}));
+const { mockFindRun, mockCreatePublicToken, mockFinalize, mockRunsCancel } =
+  vi.hoisted(() => ({
+    mockFindRun: vi.fn(),
+    mockCreatePublicToken: vi.fn(async () => 'public-token'),
+    mockFinalize: vi.fn(async () => ({
+      agentRunId: 'run-1',
+      status: 'CANCELLED' as const,
+      alreadyTerminal: false,
+    })),
+    mockRunsCancel: vi.fn(async () => undefined),
+  }));
 
 vi.mock('@/repositories/agentRun.repository', () => ({
   AgentRunRepository: {
@@ -14,11 +21,11 @@ vi.mock('@/repositories/agentRun.repository', () => ({
 }));
 
 vi.mock('@/agent/finalize', () => ({
-  finalizeAgentRun: vi.fn(),
+  finalizeAgentRun: mockFinalize,
 }));
 
 vi.mock('@trigger.dev/sdk', () => ({
-  runs: { cancel: vi.fn() },
+  runs: { cancel: mockRunsCancel },
   auth: { createPublicToken: mockCreatePublicToken },
   streams: {
     define: vi.fn(() => ({ id: 'agent' })),
@@ -118,5 +125,39 @@ describe('AgentRunService.getRun realtime token', () => {
         status: 404,
       } satisfies Partial<AppError>),
     );
+  });
+});
+
+describe('AgentRunService.cancelRun', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('finalizes CANCELLED locally before calling Trigger cancel (waitpoint-safe)', async () => {
+    mockFindRun
+      .mockResolvedValueOnce({ ...baseRun, status: 'WAITING' })
+      .mockResolvedValueOnce({ ...baseRun, status: 'CANCELLED' });
+
+    const result = await AgentRunService.cancelRun(baseRun.id, baseRun.userId);
+
+    expect(mockFinalize).toHaveBeenCalledWith({
+      agentRunId: baseRun.id,
+      status: 'CANCELLED',
+      errorCode: 'cancelled',
+      errorMessage: 'Run cancelled',
+    });
+    expect(mockRunsCancel).toHaveBeenCalledWith(baseRun.triggerRunId);
+    expect(result.status).toBe('CANCELLED');
+    expect(result.realtime).toBeUndefined();
+  });
+
+  it('is a no-op for already-terminal runs', async () => {
+    mockFindRun.mockResolvedValue({ ...baseRun, status: 'CANCELLED' });
+
+    const result = await AgentRunService.cancelRun(baseRun.id, baseRun.userId);
+
+    expect(mockFinalize).not.toHaveBeenCalled();
+    expect(mockRunsCancel).not.toHaveBeenCalled();
+    expect(result.status).toBe('CANCELLED');
   });
 });

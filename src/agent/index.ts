@@ -9,6 +9,7 @@ export {
   mergeThinkingDelta,
   appendToolUse,
   appendToolResult,
+  closeOpenToolUses,
   upsertUsage,
 } from './content';
 export type {

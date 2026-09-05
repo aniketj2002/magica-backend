@@ -54,6 +54,7 @@ vi.mock('@/providers/magica', async () => {
     runNode: mockRunNode,
     getNodeRun: mockGetNodeRun,
     toAppCredits: credits.toAppCredits,
+    isMagicaVcrMock: () => false,
   };
 });
 
@@ -187,7 +188,7 @@ describe('gpt_image_2 sub-model + durable output mapping', () => {
     expect(mockEnsureReservation).toHaveBeenCalledWith({
       userId: 'user-1',
       agentRunId: 'run-1',
-      needed: 1,
+      needed: 0.05,
     });
     expect(mockSettle).toHaveBeenCalledWith({
       toolInvocationId: 'inv-1',
@@ -198,6 +199,39 @@ describe('gpt_image_2 sub-model + durable output mapping', () => {
         sourceUrls: ['https://magica.example/tmp.png'],
         assetType: 'IMAGE',
         toolInvocationId: 'inv-1',
+      }),
+    );
+    expect(result.image_url).toEqual(['https://media.test.local/generated/0.png']);
+  });
+
+  it('maps Magica gpt_image_2 output.result URLs (not image_url)', async () => {
+    mockForToken.mockResolvedValue({
+      ok: true,
+      output: {
+        id: 'cmto784s3005rl7041onl3a4z',
+        nodeType: 'gpt_image_2',
+        subModelId: 'gpt-image-2-text',
+        status: 'COMPLETED',
+        output: {
+          result: ['https://g.tlcdn.com/gen/5b9bbdf17a424a9ea38f9ea1ba6f4dbe.png'],
+          provider: 'openai',
+          creditUsed: 210720,
+        },
+        creditUsed: 210720,
+        createdAt: '2026-09-05T09:47:02.835Z',
+      },
+    });
+
+    const result = await gptImage2Tool.execute(
+      { prompt: 'mountains at golden hour' },
+      ctx({ toolCallId: 'call-result-shape' }),
+    );
+
+    expect(mockMirror).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sourceUrls: [
+          'https://g.tlcdn.com/gen/5b9bbdf17a424a9ea38f9ea1ba6f4dbe.png',
+        ],
       }),
     );
     expect(result.image_url).toEqual(['https://media.test.local/generated/0.png']);

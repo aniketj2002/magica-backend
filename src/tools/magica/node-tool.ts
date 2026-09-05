@@ -52,7 +52,7 @@ export type CreateMagicaNodeToolOptions<I, O> = {
 };
 
 /**
- * Shared Magica node tool: wait token → runNode(webhook) → poll fallback →
+ * Shared Magica node tool: wait token → runNode → magica-poll (every 20s) →
  * wait.forToken → top up to actual credits → settle on COMPLETED. The
  * estimated cost is already reserved by `executeTool` before we get here.
  */
@@ -185,18 +185,23 @@ async function runMagicaNode<I, O>(
     heartbeatAt: now(),
   });
 
-  await ctx.emit?.({
-    type: 'tool-progress',
-    id: ctx.toolCallId,
-    name: opts.name,
-    status: run.status,
-  });
-
   if (!TERMINAL_STATUSES.has(run.status)) {
+    await ctx.emit?.({
+      type: 'tool-progress',
+      id: ctx.toolCallId,
+      name: opts.name,
+      status: run.status,
+    });
     throw new Error(`Magica run ${run.id} resumed with non-terminal status ${run.status}`);
   }
 
   if (run.status !== 'COMPLETED') {
+    await ctx.emit?.({
+      type: 'tool-progress',
+      id: ctx.toolCallId,
+      name: opts.name,
+      status: run.status,
+    });
     throw new Error(
       run.userMessage ??
         run.error ??
@@ -217,8 +222,25 @@ async function runMagicaNode<I, O>(
     microcredits,
   });
 
-  const mapped = opts.mapOutput(run);
-  return await rewriteOutputWithDurableUrls(opts, mapped, ctx);
+  try {
+    const mapped = opts.mapOutput(run);
+    const output = await rewriteOutputWithDurableUrls(opts, mapped, ctx);
+    await ctx.emit?.({
+      type: 'tool-progress',
+      id: ctx.toolCallId,
+      name: opts.name,
+      status: 'COMPLETED',
+    });
+    return output;
+  } catch (error) {
+    await ctx.emit?.({
+      type: 'tool-progress',
+      id: ctx.toolCallId,
+      name: opts.name,
+      status: 'FAILED',
+    });
+    throw error;
+  }
 }
 
 async function rewriteOutputWithDurableUrls<I, O>(
@@ -291,16 +313,26 @@ async function markWaitpointExpired(tokenId: string) {
   });
 }
 
-/** Extract string URL arrays from Magica output payloads. */
+/**
+ * Extract URL arrays from Magica output payloads.
+ * Prefer the tool-specific key (`image_url` / `video_url`); fall back to
+ * Magica's generic `result` field (e.g. gpt_image_2).
+ */
 export function extractUrlArray(
   output: unknown,
   key: 'image_url' | 'video_url',
 ): string[] {
   if (!output || typeof output !== 'object') return [];
-  const value = (output as Record<string, unknown>)[key];
-  if (typeof value === 'string') return [value];
-  if (Array.isArray(value)) {
-    return value.filter((v): v is string => typeof v === 'string');
+  const record = output as Record<string, unknown>;
+  for (const candidate of [key, 'result'] as const) {
+    const value = record[candidate];
+    if (typeof value === 'string' && value.length > 0) return [value];
+    if (Array.isArray(value)) {
+      const urls = value.filter(
+        (v): v is string => typeof v === 'string' && v.length > 0,
+      );
+      if (urls.length > 0) return urls;
+    }
   }
   return [];
 }

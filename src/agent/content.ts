@@ -264,6 +264,33 @@ export function appendToolResult(
   ];
 }
 
+/**
+ * Append error tool_result blocks for any tool_use that has no matching result.
+ * Keeps FE from treating cancelled/failed runs as still "Generating…".
+ */
+export function closeOpenToolUses(
+  blocks: ContentBlock[],
+  result: { content: unknown; isError?: boolean },
+): ContentBlock[] {
+  const closed = new Set(
+    blocks
+      .filter((b): b is ToolResultBlock => b.type === 'tool_result')
+      .map((b) => b.toolUseId),
+  );
+  const extras: ContentBlock[] = [];
+  for (const block of blocks) {
+    if (block.type !== 'tool_use' || closed.has(block.id)) continue;
+    extras.push({
+      type: 'tool_result',
+      toolUseId: block.id,
+      content: result.content,
+      isError: result.isError ?? true,
+    });
+    closed.add(block.id);
+  }
+  return extras.length === 0 ? blocks : [...blocks, ...extras];
+}
+
 export function upsertUsage(
   blocks: ContentBlock[],
   usage: { promptTokens: number; completionTokens: number; totalTokens: number },
