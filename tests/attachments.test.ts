@@ -271,7 +271,7 @@ describe('AttachmentService.reconcile', () => {
         userId: 'user-1',
         assemblyUrl: 'https://evil.example/assemblies/asm_1',
       }),
-    ).rejects.toMatchObject({ status: 400 });
+    ).rejects.toMatchObject({ status: 422 });
     expect(mockMarkCompleted).not.toHaveBeenCalled();
   });
 });

@@ -1,0 +1,35 @@
+# App + agent skill trees — not docs content
+.cursor/
+.devin/
+.agents/
+.claude/
+src/
+tests/
+migrations/
+node_modules/
+.next/
+.trigger/
+.prisma/
+.pnpm-store/
+
+# Project markdown that is not part of the docs site
+AGENTS.md
+CLAUDE.md
+prisma-next.md
+.emit.log
+
+# Source / lockfiles
+*.ts
+*.tsx
+*.js
+*.cjs
+*.mjs
+package*.json
+pnpm-*.yaml
+tsconfig*.json
+vitest.config.ts
+trigger.config.ts
+prisma.config.ts
+next.config.ts
+docker-compose.yml
+merge.cjs

@@ -36,3 +36,31 @@ export async function adjustBalance(
     throw AppError.notFound('User not found');
   }
 }
+
+/**
+ * Conditionally debit `amount` only when balance is sufficient.
+ * Returns true when the row was updated; false when balance was too low
+ * (or the user was missing).
+ */
+export async function tryDebitBalance(
+  userId: string,
+  amount: number,
+  client?: SqlExecutor,
+): Promise<boolean> {
+  if (amount < 0) {
+    throw new Error('tryDebitBalance amount must be non-negative');
+  }
+  if (amount === 0) return true;
+
+  const plan = db.raw.sql`
+    UPDATE "public"."user"
+    SET "balance" = "balance" - ${amount},
+        "updatedAt" = NOW()
+    WHERE "id" = ${userId}
+      AND "balance" >= ${amount}
+  `
+    .affectedCount()
+    .build();
+
+  return (await resolveExecutor(client).execute(plan)).affectedRows === 1;
+}

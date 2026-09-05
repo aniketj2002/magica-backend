@@ -15,7 +15,8 @@ export const CreditLedgerRepository = {
   },
 
   /**
-   * Insert a reservation hold for a run. Idempotent via `reserve:${agentRunId}`.
+   * Insert a reservation hold for a run. Idempotent via `reserve:${agentRunId}`
+   * (legacy single-hold key) or `reserve:${agentRunId}:${seq}` for progressive top-ups.
    * Amount is negative (debit) on the ledger. Does not touch User.balance.
    */
   async createReservation(
@@ -23,22 +24,28 @@ export const CreditLedgerRepository = {
       userId: string;
       agentRunId: string;
       amount: number;
+      /** Progressive sequence; omit for legacy `reserve:${agentRunId}` key. */
+      seq?: number;
     },
     client: OrmClient = db,
   ) {
     const amount = -Math.abs(opts.amount);
+    const idempotencyKey =
+      opts.seq !== undefined
+        ? `reserve:${opts.agentRunId}:${opts.seq}`
+        : `reserve:${opts.agentRunId}`;
     try {
       return await client.orm.public.CreditLedger.create({
         userId: opts.userId,
         agentRunId: opts.agentRunId,
         type: 'RESERVATION',
         amount,
-        idempotencyKey: `reserve:${opts.agentRunId}`,
+        idempotencyKey,
       });
     } catch (error) {
       if (isUniqueConstraintViolation(error)) {
         return await client.orm.public.CreditLedger.where({
-          idempotencyKey: `reserve:${opts.agentRunId}`,
+          idempotencyKey,
         }).first();
       }
       throw error;
@@ -52,9 +59,48 @@ export const CreditLedgerRepository = {
     }).first();
   },
 
+  async findRelease(agentRunId: string, client: OrmClient = db) {
+    return await client.orm.public.CreditLedger.where({
+      agentRunId,
+      type: 'RELEASE',
+    }).first();
+  },
+
   /**
+   * Insert a RELEASE for unused reservation. Idempotent via `release:${agentRunId}`.
+   * @returns true when a new row was inserted.
+   */
+  async createRelease(
+    opts: {
+      userId: string;
+      agentRunId: string;
+      releaseAmount: number;
+    },
+    client: OrmClient = db,
+  ): Promise<boolean> {
+    const releaseAmount = Math.abs(opts.releaseAmount);
+    if (releaseAmount === 0) return false;
+
+    try {
+      await client.orm.public.CreditLedger.create({
+        userId: opts.userId,
+        agentRunId: opts.agentRunId,
+        type: 'RELEASE',
+        amount: releaseAmount,
+        idempotencyKey: `release:${opts.agentRunId}`,
+      });
+      return true;
+    } catch (error) {
+      if (isUniqueConstraintViolation(error)) {
+        return false;
+      }
+      throw error;
+    }
+  },
+
+  /**
+   * @deprecated Prefer progressive settle + createRelease. Kept for older call sites.
    * Insert RELEASE + CHARGE (usage debit) in one statement.
-   * Idempotent via unique keys; unique violations are treated as already applied.
    */
   async createReleaseAndCharge(
     opts: {

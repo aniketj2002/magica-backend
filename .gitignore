@@ -10,6 +10,7 @@
 !.yarn/releases
 !.yarn/versions
 /.trigger
+/.pnpm-store
 
 # testing
 /coverage

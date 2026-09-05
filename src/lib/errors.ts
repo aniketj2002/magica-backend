@@ -5,6 +5,7 @@ export type AppErrorCode =
   | 'chat_run_active'
   | 'validation_error'
   | 'model_not_allowed'
+  | 'payment_required'
   | 'internal_error'
   | (string & {});
 
@@ -49,6 +50,10 @@ export class AppError extends Error {
       `Model "${modelId}" is not allowed`,
       { modelId },
     );
+  }
+
+  static paymentRequired(message = 'Insufficient credits'): AppError {
+    return new AppError('payment_required', 402, message);
   }
 
   static internal(message = 'Internal server error', details?: unknown): AppError {
