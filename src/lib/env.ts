@@ -9,7 +9,7 @@ const envSchema = z.object({
   OPENROUTER_API_KEY: z.string().min(1).optional(),
   TRIGGER_SECRET_KEY: z.string().min(1).optional(),
   TRIGGER_PROJECT_REF: z.string().min(1).optional(),
-  /** Comma-separated browser origins allowed for CORS (default: http://localhost:3000). */
+  /** Unused while CORS allows any Origin; optional for a future allowlist. */
   CORS_ALLOWED_ORIGINS: z.string().optional(),
   MAGICA_API_KEY: z.string().min(1).optional(),
   MAGICA_API_BASE_URL: z
