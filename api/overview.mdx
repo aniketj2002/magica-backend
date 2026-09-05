@@ -18,12 +18,13 @@ Base path for product APIs: `/api/v1`. All v1 routes require a Clerk session unl
 | `POST` | `/api/v1/runs/:runId/cancel` | Cancel run |
 | `POST` | `/api/v1/runs/:runId/tool-calls/:toolCallId/approve` | Approve paid tool |
 | `POST` | `/api/v1/runs/:runId/tool-calls/:toolCallId/reject` | Reject paid tool |
-| `GET` | `/api/v1/tools` | Registered tools + pricing metadata |
-| `POST` | `/api/v1/tools/:name/estimate` | Estimate credits |
 | `GET` | `/api/v1/credits` | Current balance |
 | `GET` | `/api/v1/credits/usage` | Ledger usage summary |
 | `POST` | `/api/v1/attachments` | PENDING attachment + upload signature |
 | `GET` | `/api/v1/attachments/:id` | Attachment status |
+| `POST` | `/api/v1/attachments/:id/reconcile` | Complete upload from Transloadit assembly URL |
 | `POST` | `/api/webhooks/magica` | Magica run terminal events (Svix) |
 | `POST` | `/api/webhooks/transloadit` | Assembly notification |
 | `POST` | `/api/webhooks/clerk` | Optional user.created sync |
+
+Tool definitions live in the server registry (`crop_image`, `gpt_image_2`, `merge_videos`); there is no public `/api/v1/tools` HTTP surface.

@@ -25,6 +25,8 @@
             "group": "Guides",
             "pages": [
               "guides/architecture",
+              "guides/application-flow",
+              "guides/database-schema",
               "guides/agent-runs",
               "guides/credits",
               "guides/media"
@@ -37,7 +39,6 @@
               "api/chats",
               "api/messages",
               "api/runs",
-              "api/tools",
               "api/credits",
               "api/attachments",
               "api/webhooks"

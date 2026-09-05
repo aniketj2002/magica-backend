@@ -1,0 +1,103 @@
+{
+  "version": 1,
+  "fingerprint": "1f04e563864a0d2a",
+  "recordedAt": "2026-09-05T09:17:15.910Z",
+  "updatedAt": "2026-09-05T09:18:11.330Z",
+  "steps": [
+    {
+      "op": "estimate-credits",
+      "method": "POST",
+      "path": "/v1/nodes/estimate-credits",
+      "requestBody": {
+        "nodes": [
+          {
+            "type": "merge_videos",
+            "data": {
+              "video_urls": [
+                "https://pub-98b54667a4804a128dae8ac89de12421.r2.dev/attachments/5c788aa2-2635-4f05-af57-0e2b2b0c8e67/21a996ad-7277-46e4-a6eb-998d72cf9f60/1.mp4",
+                "https://pub-98b54667a4804a128dae8ac89de12421.r2.dev/attachments/5c788aa2-2635-4f05-af57-0e2b2b0c8e67/4b0f9366-c64e-4663-ab3e-c6913615d3e0/2.mp4"
+              ],
+              "transition": "none"
+            }
+          }
+        ]
+      },
+      "status": 200,
+      "responseBody": {
+        "estimates": [
+          {
+            "microcredits": 50000
+          }
+        ]
+      },
+      "recordedAt": "2026-09-05T09:17:15.910Z"
+    },
+    {
+      "op": "run",
+      "method": "POST",
+      "path": "/v1/nodes/merge_videos/run",
+      "requestBody": {
+        "input": {
+          "video_urls": [
+            "https://pub-98b54667a4804a128dae8ac89de12421.r2.dev/attachments/5c788aa2-2635-4f05-af57-0e2b2b0c8e67/21a996ad-7277-46e4-a6eb-998d72cf9f60/1.mp4",
+            "https://pub-98b54667a4804a128dae8ac89de12421.r2.dev/attachments/5c788aa2-2635-4f05-af57-0e2b2b0c8e67/4b0f9366-c64e-4663-ab3e-c6913615d3e0/2.mp4"
+          ],
+          "transition": "none"
+        }
+      },
+      "status": 202,
+      "responseBody": {
+        "runId": "cmto665yn0017l604gnjhmkho"
+      },
+      "recordedAt": "2026-09-05T09:17:32.858Z"
+    },
+    {
+      "op": "get-run",
+      "method": "GET",
+      "path": "/v1/nodes/runs/cmto665yn0017l604gnjhmkho",
+      "status": 200,
+      "responseBody": {
+        "id": "cmto665yn0017l604gnjhmkho",
+        "nodeType": "merge_videos",
+        "subModelId": null,
+        "status": "COMPLETED",
+        "input": {
+          "transition": "none",
+          "video_urls": [
+            "https://pub-98b54667a4804a128dae8ac89de12421.r2.dev/attachments/5c788aa2-2635-4f05-af57-0e2b2b0c8e67/21a996ad-7277-46e4-a6eb-998d72cf9f60/1.mp4",
+            "https://pub-98b54667a4804a128dae8ac89de12421.r2.dev/attachments/5c788aa2-2635-4f05-af57-0e2b2b0c8e67/4b0f9366-c64e-4663-ab3e-c6913615d3e0/2.mp4"
+          ]
+        },
+        "output": {
+          "fps": 29.94,
+          "width": 768,
+          "format": "mp4",
+          "height": 432,
+          "duration": 15.062,
+          "fileSize": 71889,
+          "mimeType": "video/mp4",
+          "video_url": "https://g.tlcdn.com/gen/001b8ab9a46b4ce984f7e8d88d8d0085.mp4",
+          "creditUsed": 50000
+        },
+        "error": null,
+        "userMessage": null,
+        "creditUsed": 50000,
+        "triggerRunId": "run_06g71mus0av09kpr30gefect01",
+        "source": "api",
+        "createdAt": "2026-09-05T09:17:31.440Z"
+      },
+      "recordedAt": "2026-09-05T09:18:11.330Z"
+    }
+  ],
+  "chain": {
+    "nodeType": "merge_videos",
+    "subModelId": null,
+    "input": {
+      "video_urls": [
+        "https://pub-98b54667a4804a128dae8ac89de12421.r2.dev/attachments/5c788aa2-2635-4f05-af57-0e2b2b0c8e67/21a996ad-7277-46e4-a6eb-998d72cf9f60/1.mp4",
+        "https://pub-98b54667a4804a128dae8ac89de12421.r2.dev/attachments/5c788aa2-2635-4f05-af57-0e2b2b0c8e67/4b0f9366-c64e-4663-ab3e-c6913615d3e0/2.mp4"
+      ],
+      "transition": "none"
+    }
+  }
+}

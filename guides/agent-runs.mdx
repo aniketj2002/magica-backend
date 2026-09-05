@@ -1,6 +1,6 @@
 ---
 title: Agent runs
-description: Send a message, stream progress, cancel or reconcile
+description: Send a message, stream progress, approve tools, cancel or reconcile
 ---
 
 # Agent runs
@@ -13,6 +13,19 @@ Sending a message creates a durable `AgentRun` and dispatches a Trigger.dev task
 2. Response includes `runId` plus Realtime credentials (`publicAccessToken`, stream id).
 3. The `agent-run` task restores context from Postgres, runs the tool-enabled loop, checkpoints assistant message blocks, and finalizes status.
 4. Clients can poll `GET /api/v1/runs/:runId` at any time — Realtime is a projection, not the source of truth.
+
+## Tool approval
+
+When a paid Magica tool needs consent:
+
+1. Realtime emits `tool-approval-required` (`id` = tool call id, `name`, `credits`).
+2. Run status becomes `WAITING`; invocation stays `QUEUED` with a wait token.
+3. Client calls approve or reject:
+   - `POST /api/v1/runs/:runId/tool-calls/:toolCallId/approve`
+   - `POST /api/v1/runs/:runId/tool-calls/:toolCallId/reject`
+4. Agent resumes; on approve it reserves/settles credits and runs the tool. On reject or 1h timeout the tool does not run.
+
+See [Runs API](/api/runs) and [Application flow](/guides/application-flow).
 
 ## Cancel
 

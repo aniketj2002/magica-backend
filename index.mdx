@@ -11,14 +11,14 @@ API and durable agent runtime for Magica chat. **Postgres** is the source of tru
 
 - Local setup and environment configuration
 - Authentication with Clerk
-- How agent runs, credits, and media uploads work
-- HTTP API reference for chats, messages, runs, tools, credits, and attachments
+- Application flow, database schema, agent runs, credits, and media
+- HTTP API reference for chats, messages, runs, credits, and attachments
 
 ## Stack at a glance
 
 | Layer | Role |
 | --- | --- |
-| `src/app/api/v1` | HTTP: chats, messages, runs, tools, credits, attachments |
+| `src/app/api/v1` | HTTP: chats, messages, runs, credits, attachments |
 | `src/app/api/webhooks` | Magica (Svix) + Transloadit + Clerk |
 | `src/services` | Transactions, dispatch, progressive credits, media |
 | `src/agent` | Context restore, turn loop, finalize |
@@ -29,6 +29,12 @@ API and durable agent runtime for Magica chat. **Postgres** is the source of tru
 <CardGroup cols={2}>
   <Card title="Quickstart" icon="rocket" href="/quickstart">
     Install dependencies, configure env, run the API and Trigger worker.
+  </Card>
+  <Card title="Application flow" icon="diagram-project" href="/guides/application-flow">
+    Follow a message from send through approval, Magica tools, and finalize.
+  </Card>
+  <Card title="Database schema" icon="database" href="/guides/database-schema">
+    Tables, enums, and relationships in Postgres.
   </Card>
   <Card title="API overview" icon="code" href="/api/overview">
     Browse authenticated v1 endpoints and webhooks.

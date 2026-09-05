@@ -1,0 +1,75 @@
+---
+title: Application flow
+description: End-to-end path from chat message to finalized agent run
+---
+
+# Application flow
+
+Postgres is the source of truth. Trigger.dev runs the agent loop and projects Realtime streams; clients must be able to reconcile from HTTP if the socket drops.
+
+## 1. Send a message
+
+```
+Client
+  → POST /api/v1/chats/:chatId/messages
+       (Clerk auth, Zod, model allowlist, optional attachmentIds, Idempotency-Key)
+  → Postgres: user Message + AgentRun + credit reservation
+  → Trigger tasks.trigger (idempotencyKey = runId)
+  ← { chatId, messageId, runId, realtime: { runId, streamId, publicAccessToken } }
+```
+
+Without a Trigger worker, the run stays `QUEUED` until a worker or the reconcile sweeper dispatches it.
+
+## 2. Agent loop
+
+```
+agent-run task
+  → restore context from Postgres
+  → provider-neutral loop (OpenRouter adapter today)
+  → stream parts via streams.define("agent")
+  → checkpoint assistant Message content blocks
+```
+
+Statuses move through `QUEUED` → `RUNNING` → optionally `WAITING` → `COMPLETED` / `FAILED` / `CANCELLED`.
+
+## 3. Paid tool approval (human-in-the-loop)
+
+Before charging for a Magica tool, the run can park on a **tool approval** waitpoint:
+
+1. Server estimates credits, creates a `Waitpoint` (`type: tool_approval`), sets `ToolInvocation` to `QUEUED`, run to `WAITING`.
+2. Realtime emits `tool-approval-required` with `toolCallId`, name, and credits.
+3. Client calls approve or reject:
+   - `POST /api/v1/runs/:runId/tool-calls/:toolCallId/approve`
+   - `POST /api/v1/runs/:runId/tool-calls/:toolCallId/reject`
+4. `wait.completeToken` resumes the agent. Credits are **not** reserved while waiting. Timeout is **1 hour** (`timed_out`).
+
+## 4. Magica tool execution
+
+After approval (when required):
+
+```
+  → progressive credit ensureReservation / top-up
+  → wait.createToken + Magica run
+  → Magica webhook and/or magica-poll complete the wait token
+  → mirror outputs to R2 → GeneratedAsset
+  → idempotent CHARGE on CreditLedger
+```
+
+## 5. Finalize
+
+```
+  → set run terminal status
+  → release unused reservation (reservedCredits − settledCredits)
+  → clear chat concurrency lock / allow next run
+```
+
+## 6. Media side path
+
+Independent of the agent loop for user uploads:
+
+```
+POST /attachments → browser → Transloadit → R2
+  → webhook or POST /attachments/:id/reconcile → Attachment COMPLETED
+```
+
+See [Media uploads](/guides/media) and [Database schema](/guides/database-schema).

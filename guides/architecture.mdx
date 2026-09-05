@@ -8,24 +8,27 @@ description: Request path from client to Trigger agent loop
 ```
 Client
   → POST /api/v1/chats/:id/messages  (Clerk auth, Zod, model allowlist, attachmentIds)
-  → Postgres tx: user Message + AgentRun + CAS Chat.activeRunId + credit reservation
+  → Postgres: user Message + AgentRun + credit reservation
   → Trigger.dev tasks.trigger (idempotencyKey = runId)
   ← { chatId, messageId, runId, realtime: { runId, streamId, publicAccessToken } }
 
 Trigger agent-run task
   → restore context from Postgres
   → provider-neutral agent loop (OpenRouter adapter today)
-  → tool calls → Magica estimate-credits → progressive ensureReservation
+  → paid tools → tool-approval wait (client approve/reject) → estimate → ensureReservation
   → wait.createToken + Magica run (webhook) + magica-poll fallback
   → wait.forToken → mirror outputs to R2 → settle CHARGE once
   → streams.define("agent") parts for Realtime
   → checkpoint Message content blocks
-  → finalize: run status, release unused reservation, clear chat lock
+  → finalize: run status, release unused reservation
 ```
+
+For the full sequence including media and waitpoints, see [Application flow](/guides/application-flow). For tables and enums, see [Database schema](/guides/database-schema).
 
 ## Design notes
 
 - **Postgres is truth; Trigger Realtime is a projection.** Clients must reconcile via `GET /api/v1/runs/:id` and message history if the socket drops.
 - **Plain `schemaTask` with payload = `agentRunId`.** Retries re-read durable state instead of treating Trigger as the conversation store.
-- **Concurrency:** `Chat.activeRunId` is a nullable unique lock claimed with atomic compare-and-set. Trigger also serializes with `concurrencyKey: chatId`.
+- **Concurrency:** Trigger serializes agent work with `concurrencyKey: chatId`.
+- **Tool approval:** paid Magica tools can park the run in `WAITING` until the user approves or rejects (`tool_approval` waitpoint, 1h timeout). Credits are not held during that wait.
 - **Model policy:** only `openrouter/free` is allowed today. Token usage is recorded on `AgentRun`; application credit cost for OpenRouter is 0.

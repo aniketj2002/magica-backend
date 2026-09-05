@@ -1,0 +1,96 @@
+---
+title: Database schema
+description: Postgres models, enums, and relationships
+---
+
+# Database schema
+
+Prisma Next contract lives in `src/prisma/contract.prisma`. Tables below are the public Postgres models.
+
+## Entity overview
+
+```
+User ─┬─ Chat ─┬─ Message ─┬─ Attachment
+      │        │           ├─ GeneratedAsset
+      │        │           └─ AgentRun ──┬─ ToolInvocation ─┬─ GeneratedAsset
+      │        │                        │                  └─ CreditLedger
+      │        │                        ├─ Waitpoint
+      │        │                        ├─ RunSkill
+      │        │                        ├─ CreditLedger
+      │        │                        └─ Message[] (assistant/tool turns)
+      │        ├─ Attachment
+      │        ├─ GeneratedAsset
+      │        └─ ToolInvocation
+      └─ CreditLedger
+```
+
+`AgentRun.messageId` is the **triggering user message**. Assistant/tool `Message` rows produced during the run point back via `Message.agentRunId`.
+
+## Core tables
+
+| Model | Role |
+| --- | --- |
+| `User` | Local user keyed by `clerkId`; holds `balance` |
+| `Chat` | Conversation owned by a user |
+| `Message` | Chat turn (`role`, `status`, JSON `content`) |
+| `AgentRun` | Durable run for one send; token usage + credit holds |
+| `ToolInvocation` | One tool call inside a run (input/output, credits, wait token) |
+| `Waitpoint` | Trigger wait token (`tool_approval`, Magica async, etc.) |
+| `Attachment` | User upload lifecycle (Transloadit → R2) |
+| `GeneratedAsset` | Tool output assets mirrored to storage |
+| `CreditLedger` | Immutable ledger (`RESERVATION`, `RELEASE`, `CHARGE`, …) |
+| `RunSkill` | Skills loaded for a run (`skillName` + `contentHash`) |
+
+## Important fields
+
+### AgentRun
+
+- `status`: `QUEUED` \| `RUNNING` \| `WAITING` \| `STOPPING` \| `COMPLETED` \| `FAILED` \| `CANCELLED`
+- `idempotencyKey` (unique) — client/send idempotency
+- `reservedCredits` / `settledCredits`
+- `triggerRunId` / `triggerTaskId` — Trigger dispatch linkage
+- Links: `chatId`, `userId`, `messageId` (triggering user message)
+
+### ToolInvocation
+
+- `status`: `QUEUED` \| `RUNNING` \| `COMPLETED` \| `FAILED` \| `CANCELLED`
+- `idempotencyKey` — often the provider `toolCallId` (used by approve/reject)
+- `waitpointToken` — set while awaiting approval or Magica completion
+- `estimatedCredits` / `actualCredits` (+ microcredit audit fields)
+
+### Waitpoint
+
+- `token` (unique Trigger wait token id)
+- `type` — e.g. `tool_approval`
+- `status`: `PENDING` \| `RESUMED` \| `EXPIRED` \| `CANCELLED`
+- `input` / `response` JSON
+
+### Attachment
+
+- `status`: `PENDING` → `UPLOADING` / `PROCESSING` → `COMPLETED` (or `FAILED` / `CANCELLED` / `EXPIRED`)
+- `transloaditAssemblyId`, `storageKey`, `resultUrl`
+
+### CreditLedger
+
+- `type`: `RESERVATION` \| `RELEASE` \| `CHARGE` \| `REFUND` \| `ADJUSTMENT`
+- Optional `agentRunId` / `toolInvocationId`
+- `idempotencyKey` (unique) for safe retries
+
+## Message enums
+
+| Enum | Values |
+| --- | --- |
+| `MessageRole` | `USER`, `ASSISTANT`, `SYSTEM`, `TOOL` |
+| `MessageStatus` | `PENDING`, `STREAMING`, `COMPLETED`, `FAILED`, `CANCELLED` |
+| `GeneratedAssetType` | `IMAGE`, `VIDEO`, `AUDIO` |
+
+## Indexes & uniqueness (high signal)
+
+- `Chat`: `(userId, createdAt, id)`
+- `Message`: `(chatId, createdAt, id)`
+- `AgentRun`: `(chatId, status)`; unique `idempotencyKey`
+- `ToolInvocation`: `providerRunId`; unique `idempotencyKey`
+- `Waitpoint`: `(agentRunId)`; unique `token`
+- `RunSkill`: unique `(agentRunId, skillName)`
+- `User`: unique `clerkId`
+- `CreditLedger`: unique `idempotencyKey`

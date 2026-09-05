@@ -1,6 +1,6 @@
 ---
 title: Runs
-description: Poll and cancel durable agent runs
+description: Poll, cancel, and approve or reject tool calls
 ---
 
 # Runs
@@ -20,3 +20,43 @@ POST /api/v1/runs/:runId/cancel
 ```
 
 Cancels via Trigger and/or local finalize depending on run state.
+
+## Approve tool call
+
+```bash
+POST /api/v1/runs/:runId/tool-calls/:toolCallId/approve
+```
+
+Completes a pending **tool approval** waitpoint so the agent can continue and charge for the Magica tool.
+
+- `:toolCallId` matches `ToolInvocation.idempotencyKey` (the streamed tool-call id).
+- Run must be owned by the caller; otherwise **404**.
+- If the invocation is not `QUEUED` with a wait token: **409** `approval_not_pending`.
+
+**Response**
+
+```json
+{
+  "approved": true,
+  "toolCallId": "..."
+}
+```
+
+## Reject tool call
+
+```bash
+POST /api/v1/runs/:runId/tool-calls/:toolCallId/reject
+```
+
+Same ownership / pending checks as approve. Resumes the wait with `approved: false` so the tool is skipped.
+
+```json
+{
+  "approved": false,
+  "toolCallId": "..."
+}
+```
+
+Credits are **not** reserved while the run is waiting for approval. Tokens expire after **1 hour** (`timed_out`).
+
+See [Application flow](/guides/application-flow) and [Agent runs](/guides/agent-runs).

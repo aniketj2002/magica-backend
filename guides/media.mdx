@@ -1,6 +1,6 @@
 ---
 title: Media uploads
-description: Transloadit direct upload and R2 mirroring
+description: Transloadit direct upload, reconcile, and R2 mirroring
 ---
 
 # Media uploads
@@ -12,7 +12,18 @@ Upload bytes never pass through Next.js.
 1. `POST /api/v1/attachments` creates a `PENDING` attachment and returns Transloadit params + signature.
 2. Browser uploads directly to Transloadit → Cloudflare R2.
 3. `POST /api/webhooks/transloadit` marks the attachment `COMPLETED`.
-4. Client can poll `GET /api/v1/attachments/:id` (and reconcile if needed).
+4. Client can poll `GET /api/v1/attachments/:id`.
+
+## Reconcile (webhook fallback)
+
+If the assembly finished but the webhook never hit your app (typical in local dev):
+
+```bash
+POST /api/v1/attachments/:id/reconcile
+{ "assemblyUrl": "https://api2.transloadit.com/assemblies/..." }
+```
+
+See [Attachments API](/api/attachments).
 
 ## Tool outputs
 

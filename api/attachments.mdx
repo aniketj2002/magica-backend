@@ -1,6 +1,6 @@
 ---
 title: Attachments
-description: Create direct uploads and poll status
+description: Create direct uploads, poll status, and reconcile
 ---
 
 # Attachments
@@ -30,4 +30,22 @@ POST /api/v1/attachments
 GET /api/v1/attachments/:id
 ```
 
-Poll until status is `COMPLETED` (driven by the Transloadit webhook).
+Poll until status is `COMPLETED` (driven by the Transloadit webhook or reconcile).
+
+## Reconcile
+
+```bash
+POST /api/v1/attachments/:id/reconcile
+```
+
+Use when the webhook did not arrive (common in local dev) but the Transloadit assembly finished.
+
+**Body**
+
+```json
+{
+  "assemblyUrl": "https://api2.transloadit.com/assemblies/..."
+}
+```
+
+Returns `{ attachment }` with updated status / storage fields when reconciliation succeeds.
