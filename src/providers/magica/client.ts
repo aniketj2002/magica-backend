@@ -1,5 +1,12 @@
 import { env } from '@/lib/env';
 import { MagicaError } from './errors';
+import {
+  bodyForVcrFingerprint,
+  isMagicaVcrMock,
+  isMagicaVcrRecord,
+  mockMagicaResponse,
+  recordMagicaExchange,
+} from './vcr';
 
 const DEFAULT_TIMEOUT_MS = 120_000;
 const MAX_RETRIES = 1;
@@ -24,6 +31,40 @@ function sleep(ms: number): Promise<void> {
 
 function backoffMs(attempt: number): number {
   return Math.min(1000 * 2 ** attempt, 8000);
+}
+
+async function recordAndReturn(
+  path: string,
+  method: string,
+  requestBody: unknown,
+  response: Response,
+): Promise<Response> {
+  const text = await response.text();
+  let responseBody: unknown = text;
+  try {
+    responseBody = text ? JSON.parse(text) : null;
+  } catch {
+    // keep raw text
+  }
+
+  try {
+    recordMagicaExchange({
+      path,
+      method,
+      requestBody: bodyForVcrFingerprint(requestBody),
+      status: response.status,
+      responseBody,
+    });
+  } catch (error) {
+    // Recording must never break live Magica calls.
+    console.warn('magica.vcr.record_failed', error);
+  }
+
+  return new Response(text, {
+    status: response.status,
+    statusText: response.statusText,
+    headers: response.headers,
+  });
 }
 
 async function readErrorMessage(response: Response): Promise<string> {
@@ -69,15 +110,22 @@ export async function mapMagicaHttpError(response: Response): Promise<MagicaErro
 
 /**
  * Fetch wrapper for Magica Inference API: auth, timeout, retry on 429/5xx.
+ * Honors MAGICA_VCR_MODE=record|mock for local fixture capture/replay.
  */
 export async function magicaFetch(
   path: string,
   options: MagicaRequestOptions = {},
 ): Promise<Response> {
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+
+  if (isMagicaVcrMock()) {
+    return mockMagicaResponse(normalizedPath, options);
+  }
+
   const method = options.method ?? 'GET';
   const useAuth = options.auth !== false;
   const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
-  const url = `${baseUrl()}${path.startsWith('/') ? path : `/${path}`}`;
+  const url = `${baseUrl()}${normalizedPath}`;
 
   let lastError: unknown;
 
@@ -110,6 +158,10 @@ export async function magicaFetch(
         await response.arrayBuffer().catch(() => undefined);
         await sleep(backoffMs(attempt));
         continue;
+      }
+
+      if (isMagicaVcrRecord()) {
+        return await recordAndReturn(normalizedPath, method, options.body, response);
       }
 
       return response;

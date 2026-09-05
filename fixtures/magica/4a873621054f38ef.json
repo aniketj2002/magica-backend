@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "fingerprint": "4a873621054f38ef",
+  "recordedAt": "2026-09-05T09:04:06.015Z",
+  "updatedAt": "2026-09-05T09:04:06.015Z",
+  "steps": [
+    {
+      "op": "estimate-credits",
+      "method": "POST",
+      "path": "/v1/nodes/estimate-credits",
+      "requestBody": {
+        "nodes": [
+          {
+            "type": "crop_image",
+            "data": {
+              "image_url": "https://x.test/a.png"
+            }
+          }
+        ]
+      },
+      "status": 200,
+      "responseBody": {
+        "estimates": [
+          {
+            "microcredits": 5000
+          },
+          {
+            "microcredits": 1000
+          }
+        ]
+      },
+      "recordedAt": "2026-09-05T09:04:06.015Z"
+    }
+  ]
+}

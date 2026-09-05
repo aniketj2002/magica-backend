@@ -22,8 +22,8 @@ const BATCH_LIMIT = 50;
  */
 export const reconcileAgentRunsTask = schedules.task({
   id: 'reconcile-agent-runs',
-  // Every minute
-  cron: '* * * * *',
+  // Every 5 minutes — durability sweeper, not hot-path
+  cron: '*/5 * * * *',
   run: async () => {
     useTriggerLogger(true);
     const log = createLogger({ traceId: 'reconcile-agent-runs' });

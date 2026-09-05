@@ -1,8 +1,20 @@
 export { magicaFetch, magicaJson, mapMagicaHttpError } from './client';
-export { MICROCREDITS_PER_CREDIT, toAppCredits } from './credits';
+export {
+  APP_CREDIT_SCALE,
+  MICROCREDITS_PER_CREDIT,
+  fromDecimal,
+  roundAppCredits,
+  toAppCredits,
+  toDecimalString,
+} from './credits';
 export { MagicaError } from './errors';
 export type { MagicaErrorCode } from './errors';
 export { runNode, getNodeRun } from './nodes';
+export {
+  isMagicaVcrMock,
+  isMagicaVcrRecord,
+  getMagicaVcrMode,
+} from './vcr';
 export {
   estimateCredits,
   getModelPricing,

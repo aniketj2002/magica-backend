@@ -14,10 +14,12 @@ export type MagicaPollPayload = z.infer<typeof MagicaPollPayloadSchema>;
 
 const TERMINAL = new Set(['COMPLETED', 'FAILED', 'CANCELED']);
 
-/** Backoff schedule covering ~15m (matches wait token timeout). */
-const POLL_BACKOFF_SECONDS = [
-  5, 5, 10, 10, 15, 20, 30, 30, 45, 60, 60, 60, 60, 60, 90, 90, 120, 120,
-];
+/**
+ * Fallback only — Magica webhooks should complete the wait token first.
+ * Poll Magica every ~35s for up to ~15m (matches wait token timeout).
+ */
+const POLL_INTERVAL_SECONDS = 35;
+const POLL_MAX_ATTEMPTS = 26;
 
 /**
  * Fallback poller for Magica node runs. Completes the waitpoint token when the
@@ -31,8 +33,8 @@ export const magicaPollTask = schemaTask({
     maxAttempts: 1,
   },
   run: async (payload): Promise<{ completed: boolean; status?: string }> => {
-    for (const seconds of POLL_BACKOFF_SECONDS) {
-      await wait.for({ seconds });
+    for (let attempt = 0; attempt < POLL_MAX_ATTEMPTS; attempt++) {
+      await wait.for({ seconds: POLL_INTERVAL_SECONDS });
       const run = await getNodeRun(payload.providerRunId);
       if (TERMINAL.has(run.status)) {
         await wait.completeToken(payload.waitpointTokenId, run);

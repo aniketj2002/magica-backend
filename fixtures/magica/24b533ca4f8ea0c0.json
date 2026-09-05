@@ -1,0 +1,98 @@
+{
+  "version": 1,
+  "fingerprint": "24b533ca4f8ea0c0",
+  "recordedAt": "2026-09-05T08:23:07.072Z",
+  "updatedAt": "2026-09-05T08:24:23.955Z",
+  "steps": [
+    {
+      "op": "estimate-credits",
+      "method": "POST",
+      "path": "/v1/nodes/estimate-credits",
+      "requestBody": {
+        "nodes": [
+          {
+            "type": "crop_image",
+            "data": {
+              "image_url": "https://pub-98b54667a4804a128dae8ac89de12421.r2.dev/attachments/5c788aa2-2635-4f05-af57-0e2b2b0c8e67/089f5f80-1317-417d-9199-c23bd74158a3/20260903_153121.jpg",
+              "x_percent": 21.875,
+              "y_percent": 0,
+              "width_percent": 56.25,
+              "height_percent": 100
+            }
+          }
+        ]
+      },
+      "status": 200,
+      "responseBody": {
+        "estimates": [
+          {
+            "microcredits": 5000
+          }
+        ]
+      },
+      "recordedAt": "2026-09-05T08:23:07.072Z"
+    },
+    {
+      "op": "run",
+      "method": "POST",
+      "path": "/v1/nodes/crop_image/run",
+      "requestBody": {
+        "input": {
+          "image_url": "https://pub-98b54667a4804a128dae8ac89de12421.r2.dev/attachments/5c788aa2-2635-4f05-af57-0e2b2b0c8e67/089f5f80-1317-417d-9199-c23bd74158a3/20260903_153121.jpg",
+          "x_percent": 21.875,
+          "y_percent": 0,
+          "width_percent": 56.25,
+          "height_percent": 100
+        }
+      },
+      "status": 202,
+      "responseBody": {
+        "runId": "cmto48p6x005ll204qu57hiz8"
+      },
+      "recordedAt": "2026-09-05T08:23:31.183Z"
+    },
+    {
+      "op": "get-run",
+      "method": "GET",
+      "path": "/v1/nodes/runs/cmto48p6x005ll204qu57hiz8",
+      "status": 200,
+      "responseBody": {
+        "id": "cmto48p6x005ll204qu57hiz8",
+        "nodeType": "crop_image",
+        "subModelId": null,
+        "status": "COMPLETED",
+        "input": {
+          "image_url": "https://pub-98b54667a4804a128dae8ac89de12421.r2.dev/attachments/5c788aa2-2635-4f05-af57-0e2b2b0c8e67/089f5f80-1317-417d-9199-c23bd74158a3/20260903_153121.jpg",
+          "x_percent": 21.875,
+          "y_percent": 0,
+          "width_percent": 56.25,
+          "height_percent": 100
+        },
+        "output": {
+          "width": 2250,
+          "height": 3000,
+          "image_url": "https://g.tlcdn.com/gen/514c6b47f7a649b988cbda9ace435b4a.png",
+          "creditUsed": 5000
+        },
+        "error": null,
+        "userMessage": null,
+        "creditUsed": 5000,
+        "triggerRunId": "run_06g71aj7q19o9t0kqausah0301",
+        "source": "api",
+        "createdAt": "2026-09-05T08:23:30.442Z"
+      },
+      "recordedAt": "2026-09-05T08:24:23.955Z"
+    }
+  ],
+  "chain": {
+    "nodeType": "crop_image",
+    "subModelId": null,
+    "input": {
+      "image_url": "https://pub-98b54667a4804a128dae8ac89de12421.r2.dev/attachments/5c788aa2-2635-4f05-af57-0e2b2b0c8e67/089f5f80-1317-417d-9199-c23bd74158a3/20260903_153121.jpg",
+      "x_percent": 21.875,
+      "y_percent": 0,
+      "width_percent": 56.25,
+      "height_percent": 100
+    }
+  }
+}

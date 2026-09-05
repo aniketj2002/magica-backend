@@ -3,6 +3,8 @@ import { auth, tasks } from '@trigger.dev/sdk';
 import { AppError } from '@/lib/errors';
 import { createLogger } from '@/lib/logger';
 import { decodeCursor, encodeCursor, instantToIso } from '@/lib/cursor';
+import { deriveChatTitle } from '@/lib/chatTitle';
+import { now } from '@/lib/temporal';
 import { db } from '@/prisma/db';
 import { assertAllowedModel, ALLOWED_MODELS } from '@/providers/llm/policy';
 import { ChatRepository } from '@/repositories/chat.repository';
@@ -133,6 +135,15 @@ export const ChatMessageService = {
           userId: input.userId,
         }).first();
         if (!chat) throw AppError.notFound();
+
+        // Attachment uploads create the chat early with a null title — fill it
+        // from the first user message text when still untitled.
+        if (!chat.title?.trim()) {
+          await tx.orm.public.Chat.where({ id: chat.id }).update({
+            title: deriveChatTitle(text),
+            updatedAt: now(),
+          });
+        }
 
         const message = await MessageRepository.createUserMessage(
           {

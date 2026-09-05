@@ -1,5 +1,5 @@
 import { createLogger } from '@/lib/logger';
-import { putR2Object } from '@/providers/storage';
+import { putR2Object, rewritePrivateR2Url } from '@/providers/storage';
 import { GeneratedAssetRepository } from '@/repositories/generatedAsset.repository';
 
 const DEFAULT_MAX_BYTES = 100 * 1024 * 1024; // 100 MiB
@@ -115,6 +115,7 @@ export async function mirrorToolOutputUrls(
     const mirrored = await mirrorToR2({ sourceUrl, key });
 
     if (mirrored.ok) {
+      const publicUrl = rewritePrivateR2Url(mirrored.publicUrl);
       await GeneratedAssetRepository.create({
         userId: opts.userId,
         chatId: opts.chatId,
@@ -126,8 +127,9 @@ export async function mirrorToolOutputUrls(
         storageKey: mirrored.key,
         mimeType: mirrored.contentType,
         sizeBytes: mirrored.sizeBytes,
+        metadata: { publicUrl },
       });
-      durable.push(mirrored.publicUrl);
+      durable.push(publicUrl);
     } else {
       await GeneratedAssetRepository.create({
         userId: opts.userId,

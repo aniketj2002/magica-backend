@@ -1,0 +1,278 @@
+[
+  {
+    "id": "alterType.agentRun.reservedCredits",
+    "label": "Alter type of \"agentRun\".\"reservedCredits\" to numeric",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "reservedCredits",
+        "table": "agentRun"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"reservedCredits\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "agentRun",
+          "reservedCredits"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "alter type of \"reservedCredits\"",
+        "sql": "ALTER TABLE \"public\".\"agentRun\" ALTER COLUMN \"reservedCredits\" TYPE numeric USING \"reservedCredits\"::numeric"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"reservedCredits\" has type \"numeric\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_attribute\" AS \"a\" INNER JOIN \"pg_class\" AS \"c\" ON \"c\".\"oid\" = \"a\".\"attrelid\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"a\".\"attname\" = $3 AND (format_type(\"a\".\"atttypid\", \"a\".\"atttypmod\")) = $4 AND NOT (\"a\".\"attisdropped\"))) AS \"result\"",
+        "params": [
+          "public",
+          "agentRun",
+          "reservedCredits",
+          "numeric"
+        ]
+      }
+    ],
+    "meta": {
+      "warning": "TABLE_REWRITE"
+    }
+  },
+  {
+    "id": "alterType.agentRun.settledCredits",
+    "label": "Alter type of \"agentRun\".\"settledCredits\" to numeric",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "settledCredits",
+        "table": "agentRun"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"settledCredits\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "agentRun",
+          "settledCredits"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "alter type of \"settledCredits\"",
+        "sql": "ALTER TABLE \"public\".\"agentRun\" ALTER COLUMN \"settledCredits\" TYPE numeric USING \"settledCredits\"::numeric"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"settledCredits\" has type \"numeric\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_attribute\" AS \"a\" INNER JOIN \"pg_class\" AS \"c\" ON \"c\".\"oid\" = \"a\".\"attrelid\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"a\".\"attname\" = $3 AND (format_type(\"a\".\"atttypid\", \"a\".\"atttypmod\")) = $4 AND NOT (\"a\".\"attisdropped\"))) AS \"result\"",
+        "params": [
+          "public",
+          "agentRun",
+          "settledCredits",
+          "numeric"
+        ]
+      }
+    ],
+    "meta": {
+      "warning": "TABLE_REWRITE"
+    }
+  },
+  {
+    "id": "alterType.creditLedger.amount",
+    "label": "Alter type of \"creditLedger\".\"amount\" to numeric",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "amount",
+        "table": "creditLedger"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"amount\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "creditLedger",
+          "amount"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "alter type of \"amount\"",
+        "sql": "ALTER TABLE \"public\".\"creditLedger\" ALTER COLUMN \"amount\" TYPE numeric USING \"amount\"::numeric"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"amount\" has type \"numeric\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_attribute\" AS \"a\" INNER JOIN \"pg_class\" AS \"c\" ON \"c\".\"oid\" = \"a\".\"attrelid\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"a\".\"attname\" = $3 AND (format_type(\"a\".\"atttypid\", \"a\".\"atttypmod\")) = $4 AND NOT (\"a\".\"attisdropped\"))) AS \"result\"",
+        "params": [
+          "public",
+          "creditLedger",
+          "amount",
+          "numeric"
+        ]
+      }
+    ],
+    "meta": {
+      "warning": "TABLE_REWRITE"
+    }
+  },
+  {
+    "id": "alterType.toolInvocation.actualCredits",
+    "label": "Alter type of \"toolInvocation\".\"actualCredits\" to numeric",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "actualCredits",
+        "table": "toolInvocation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"actualCredits\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "toolInvocation",
+          "actualCredits"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "alter type of \"actualCredits\"",
+        "sql": "ALTER TABLE \"public\".\"toolInvocation\" ALTER COLUMN \"actualCredits\" TYPE numeric USING \"actualCredits\"::numeric"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"actualCredits\" has type \"numeric\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_attribute\" AS \"a\" INNER JOIN \"pg_class\" AS \"c\" ON \"c\".\"oid\" = \"a\".\"attrelid\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"a\".\"attname\" = $3 AND (format_type(\"a\".\"atttypid\", \"a\".\"atttypmod\")) = $4 AND NOT (\"a\".\"attisdropped\"))) AS \"result\"",
+        "params": [
+          "public",
+          "toolInvocation",
+          "actualCredits",
+          "numeric"
+        ]
+      }
+    ],
+    "meta": {
+      "warning": "TABLE_REWRITE"
+    }
+  },
+  {
+    "id": "alterType.toolInvocation.estimatedCredits",
+    "label": "Alter type of \"toolInvocation\".\"estimatedCredits\" to numeric",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "estimatedCredits",
+        "table": "toolInvocation"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"estimatedCredits\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "toolInvocation",
+          "estimatedCredits"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "alter type of \"estimatedCredits\"",
+        "sql": "ALTER TABLE \"public\".\"toolInvocation\" ALTER COLUMN \"estimatedCredits\" TYPE numeric USING \"estimatedCredits\"::numeric"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"estimatedCredits\" has type \"numeric\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_attribute\" AS \"a\" INNER JOIN \"pg_class\" AS \"c\" ON \"c\".\"oid\" = \"a\".\"attrelid\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"a\".\"attname\" = $3 AND (format_type(\"a\".\"atttypid\", \"a\".\"atttypmod\")) = $4 AND NOT (\"a\".\"attisdropped\"))) AS \"result\"",
+        "params": [
+          "public",
+          "toolInvocation",
+          "estimatedCredits",
+          "numeric"
+        ]
+      }
+    ],
+    "meta": {
+      "warning": "TABLE_REWRITE"
+    }
+  },
+  {
+    "id": "alterType.user.balance",
+    "label": "Alter type of \"user\".\"balance\" to numeric",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "balance",
+        "table": "user"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"balance\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "user",
+          "balance"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "alter type of \"balance\"",
+        "sql": "ALTER TABLE \"public\".\"user\" ALTER COLUMN \"balance\" TYPE numeric USING \"balance\"::numeric"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"balance\" has type \"numeric\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_attribute\" AS \"a\" INNER JOIN \"pg_class\" AS \"c\" ON \"c\".\"oid\" = \"a\".\"attrelid\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"a\".\"attname\" = $3 AND (format_type(\"a\".\"atttypid\", \"a\".\"atttypmod\")) = $4 AND NOT (\"a\".\"attisdropped\"))) AS \"result\"",
+        "params": [
+          "public",
+          "user",
+          "balance",
+          "numeric"
+        ]
+      }
+    ],
+    "meta": {
+      "warning": "TABLE_REWRITE"
+    }
+  }
+]

@@ -6,6 +6,7 @@ import { db } from '@/prisma/db';
 import { now } from '@/lib/temporal';
 import { createLogger } from '@/lib/logger';
 import { InsufficientCreditsError } from '@/lib/credits-errors';
+import { fromDecimal, toDecimalString } from '@/providers/magica/credits';
 import { CreditReservationService } from '@/services/creditReservation.service';
 import { AgentRunRepository } from '@/repositories/agentRun.repository';
 import { requestToolApproval } from './approval';
@@ -146,7 +147,7 @@ export async function executeTool(args: ExecuteToolArgs): Promise<ToolExecuteRes
       toolName: args.toolName,
       status: needsApproval ? 'QUEUED' : 'RUNNING',
       input: asJson(parsedInput.data),
-      estimatedCredits,
+      estimatedCredits: toDecimalString(estimatedCredits),
       estimatedMicrocredits,
       provider: tool.pricing.provider,
       idempotencyKey: args.toolCallId,
@@ -165,7 +166,7 @@ export async function executeTool(args: ExecuteToolArgs): Promise<ToolExecuteRes
           toolCallId: args.toolCallId,
           invocationId: existing.id,
           output: existing.output,
-          estimatedCredits: existing.estimatedCredits ?? estimatedCredits,
+          estimatedCredits: fromDecimal(existing.estimatedCredits) || estimatedCredits,
         };
       }
       if (existing?.status === 'FAILED' || existing?.status === 'CANCELLED') {

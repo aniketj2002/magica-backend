@@ -18,6 +18,13 @@ const envSchema = z.object({
     .default('https://inference.magica.com'),
   MAGICA_WEBHOOK_SIGNING_SECRET: z.string().min(1).optional(),
   MAGICA_CREDIT_MARKUP: z.coerce.number().positive().default(1),
+  /**
+   * Local Magica VCR: `off` (default), `record` (live + write fixtures),
+   * `mock` (replay fixtures, no Magica network).
+   */
+  MAGICA_VCR_MODE: z.enum(['off', 'record', 'mock']).default('off'),
+  /** Directory for Magica VCR fixtures (default: fixtures/magica). */
+  MAGICA_VCR_DIR: z.string().min(1).optional(),
   APP_PUBLIC_URL: z.string().url().optional(),
   TRANSLOADIT_AUTH_KEY: z.string().min(1).optional(),
   TRANSLOADIT_AUTH_SECRET: z.string().min(1).optional(),
@@ -117,12 +124,18 @@ function buildEnv(): Env {
           'R2_ACCOUNT_ID, R2_BUCKET, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, and R2_PUBLIC_BASE_URL are required',
         );
       }
+      const publicBaseUrl = data.R2_PUBLIC_BASE_URL.replace(/\/$/, '');
+      if (publicBaseUrl.includes('r2.cloudflarestorage.com')) {
+        throw new Error(
+          'R2_PUBLIC_BASE_URL must be the public r2.dev or custom domain URL, not the private *.r2.cloudflarestorage.com API endpoint',
+        );
+      }
       return {
         accountId: data.R2_ACCOUNT_ID,
         bucket: data.R2_BUCKET,
         accessKeyId: data.R2_ACCESS_KEY_ID,
         secretAccessKey: data.R2_SECRET_ACCESS_KEY,
-        publicBaseUrl: data.R2_PUBLIC_BASE_URL.replace(/\/$/, ''),
+        publicBaseUrl,
       };
     },
   };

@@ -1,5 +1,6 @@
 import { db } from '../prisma/db';
 import { Temporal } from '@js-temporal/polyfill';
+import { toDecimalString } from '@/providers/magica/credits';
 
 export const UserRepository = {
   async findUserByClerkId(clerkId: string) {
@@ -11,7 +12,7 @@ export const UserRepository = {
       clerkId,
       email,
       name,
-      balance: initialCredits,
+      balance: toDecimalString(initialCredits),
       updatedAt: Temporal.Now.instant(),
     });
   }

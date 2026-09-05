@@ -11,6 +11,7 @@ import {
 } from '@/repositories/creditLedger.repository';
 import { CreditReservationService } from '@/services/creditReservation.service';
 import { estimateModelCredits } from '@/services/modelCredits.policy';
+import { fromDecimal, toDecimalString } from '@/providers/magica/credits';
 
 /** Prisma DateTime fields are Temporal.Instant — never pass them to `new Date(x)`. */
 function toInstant(value: unknown): Temporal.Instant {
@@ -105,8 +106,10 @@ export const CreditService = {
       const run = await tx.orm.public.AgentRun.where({ id: agentRunId }).first();
       if (!run) return;
 
-      const releaseAmount = Math.max(0, run.reservedCredits - run.settledCredits);
-      if (releaseAmount > 0 || run.reservedCredits > 0) {
+      const reserved = fromDecimal(run.reservedCredits);
+      const settled = fromDecimal(run.settledCredits);
+      const releaseAmount = Math.max(0, reserved - settled);
+      if (releaseAmount > 0 || reserved > 0) {
         const created = await CreditLedgerRepository.createRelease(
           {
             userId,
@@ -182,18 +185,18 @@ export const CreditService = {
       if (entry.type === 'RESERVATION') {
         const prev = bucket.reservation?.amount ?? 0;
         bucket.reservation = {
-          amount: prev + Math.abs(entry.amount),
+          amount: prev + Math.abs(fromDecimal(entry.amount)),
           createdAt: bucket.reservation?.createdAt ?? entry.createdAt,
         };
       } else if (entry.type === 'RELEASE') {
         bucket.release = {
-          amount: Math.abs(entry.amount),
+          amount: Math.abs(fromDecimal(entry.amount)),
           createdAt: entry.createdAt,
         };
       } else if (entry.type === 'CHARGE') {
         const prev = bucket.charge?.amount ?? 0;
         bucket.charge = {
-          amount: prev + Math.abs(entry.amount),
+          amount: prev + Math.abs(fromDecimal(entry.amount)),
           createdAt: bucket.charge?.createdAt ?? entry.createdAt,
         };
       }
@@ -203,7 +206,7 @@ export const CreditService = {
     const items: CreditUsageItem[] = [];
 
     for (const entry of inPeriod) {
-      const direction = classifyDirection(entry.type, entry.amount);
+      const direction = classifyDirection(entry.type, fromDecimal(entry.amount));
       if (!direction) continue;
       if (show === 'debited' && direction !== 'debit') continue;
       if (show === 'credited' && direction !== 'credit') continue;
@@ -216,14 +219,17 @@ export const CreditService = {
       items.push({
         id: entry.id,
         toolName: toolNameForEntry(entry.type, agentRunId),
-        amount: Math.abs(entry.amount),
+        amount: Math.abs(fromDecimal(entry.amount)),
         reserved,
         released,
         direction,
         ledgerType: entry.type,
         agentRunId,
         createdAt: instantToIso(entry.createdAt),
-        steps: buildSteps(entry, runLedger),
+        steps: buildSteps(
+          { type: entry.type, amount: fromDecimal(entry.amount), createdAt: entry.createdAt },
+          runLedger,
+        ),
       });
     }
 
@@ -289,7 +295,7 @@ async function ensureFreeRunUsageCharge(
       userId,
       agentRunId,
       type: 'CHARGE',
-      amount: 0,
+      amount: toDecimalString(0),
       idempotencyKey: `charge:model:${agentRunId}`,
     });
   } catch (error) {

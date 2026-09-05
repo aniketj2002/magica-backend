@@ -2,7 +2,11 @@ import { isUniqueConstraintViolation } from '@prisma/orm-family-sql/errors';
 import { db } from '@/prisma/db';
 import type { OrmClient } from '@/prisma/orm';
 import { InsufficientCreditsError } from '@/lib/credits-errors';
-import { toAppCredits } from '@/providers/magica/credits';
+import {
+  fromDecimal,
+  toAppCredits,
+  toDecimalString,
+} from '@/providers/magica/credits';
 import {
   tryDebitBalance,
   type SqlExecutor,
@@ -58,7 +62,7 @@ export const CreditReservationService = {
     },
     client?: TxClient,
   ): Promise<{ reservedCredits: number; topUp: number }> {
-    const needed = Math.max(0, Math.floor(opts.needed));
+    const needed = Math.max(0, opts.needed);
 
     const runInTx = async (tx: TxClient) => {
       const run = await tx.orm.public.AgentRun.where({
@@ -68,9 +72,11 @@ export const CreditReservationService = {
         throw new Error(`AgentRun ${opts.agentRunId} not found`);
       }
 
-      const outstanding = run.reservedCredits - run.settledCredits;
+      const reserved = fromDecimal(run.reservedCredits);
+      const settled = fromDecimal(run.settledCredits);
+      const outstanding = reserved - settled;
       if (outstanding >= needed) {
-        return { reservedCredits: run.reservedCredits, topUp: 0 };
+        return { reservedCredits: reserved, topUp: 0 };
       }
 
       const topUp = needed - outstanding;
@@ -90,7 +96,7 @@ export const CreditReservationService = {
           userId: opts.userId,
           agentRunId: opts.agentRunId,
           type: 'RESERVATION',
-          amount: -Math.abs(topUp),
+          amount: toDecimalString(-Math.abs(topUp)),
           idempotencyKey: `reserve:${opts.agentRunId}:${seq}`,
         });
       } catch (error) {
@@ -106,7 +112,7 @@ export const CreditReservationService = {
       await bumpReservedCredits(opts.agentRunId, topUp, tx);
 
       return {
-        reservedCredits: run.reservedCredits + topUp,
+        reservedCredits: reserved + topUp,
         topUp,
       };
     };
@@ -146,7 +152,7 @@ export const CreditReservationService = {
           agentRunId: run.id,
           toolInvocationId: opts.toolInvocationId,
           type: 'CHARGE',
-          amount: -Math.abs(credits),
+          amount: toDecimalString(-Math.abs(credits)),
           idempotencyKey: `charge:tool:${opts.toolInvocationId}`,
         });
       } catch (error) {
@@ -160,7 +166,7 @@ export const CreditReservationService = {
         id: opts.toolInvocationId,
       }).update({
         actualMicrocredits: opts.microcredits,
-        actualCredits: credits,
+        actualCredits: toDecimalString(credits),
       });
 
       await bumpSettledCredits(run.id, credits, tx as TxClient);

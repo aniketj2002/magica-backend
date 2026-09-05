@@ -17,6 +17,8 @@ export type DirectUploadParams = {
       use: ':original';
       credentials: string;
       path: string;
+      /** Include store results (ssl_url / path) in assembly JSON. */
+      result: true;
     };
   };
 };
@@ -57,6 +59,7 @@ export function createDirectUploadSignature(opts: {
         use: ':original',
         credentials: auth.r2Credentials,
         path: `attachments/${opts.userId}/${opts.attachmentId}/\${file.url_name}`,
+        result: true,
       },
     },
   };

@@ -20,6 +20,19 @@ export const ChatRepository = {
     return await db.orm.public.Chat.where({ id: chatId, userId }).first();
   },
 
+  async updateTitle(
+    opts: { chatId: string; userId: string; title: string },
+    client: OrmClient = db,
+  ) {
+    return await client.orm.public.Chat.where({
+      id: opts.chatId,
+      userId: opts.userId,
+    }).update({
+      title: opts.title,
+      updatedAt: now(),
+    });
+  },
+
   async listForUser(opts: {
     userId: string;
     limit: number;

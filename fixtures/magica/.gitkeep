@@ -1,0 +1,2 @@
+# Magica VCR fixtures (MAGICA_VCR_MODE=record|mock).
+# Each file is `<fingerprint>.json` — commit useful captures for local mock replay.

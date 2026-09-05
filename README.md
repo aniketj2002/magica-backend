@@ -119,9 +119,9 @@ are durable R2 URLs when mirroring succeeds.
   SDK and treats Trigger as the conversation store. We use plain `schemaTask`
   with payload = `agentRunId` only so retries re-read durable state.
 - **Progressive reservation, not per-token settlement.** Magica estimate → app
-  credits (ceil + markup) drive top-ups; OpenRouter stays free via policy so a
-  paid model later needs no loop changes. Sub-cent Magica tools bill 1 credit;
-  exact microcredits stay on `ToolInvocation` for auditability.
+  credits (fractional Decimal + markup) drive top-ups; OpenRouter stays free via
+  policy so a paid model later needs no loop changes. Exact microcredits stay
+  on `ToolInvocation` for auditability.
 - **Waitpoint + poll, not long-polling in the agent task.** The agent suspends
   on `wait.forToken`; webhook and poller race safely (`completeToken` is a
   no-op when already completed).

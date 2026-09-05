@@ -22,7 +22,7 @@ Magica tools use **progressive credit reservation**, not per-token settlement.
 
 ## Conversion
 
-Magica estimate → app credits (ceil + `MAGICA_CREDIT_MARKUP`). Sub-cent Magica tools bill **1 credit**; exact microcredits stay on `ToolInvocation` for auditability. OpenRouter stays free via model policy.
+Magica estimate → app credits (exact fraction + `MAGICA_CREDIT_MARKUP`, stored as `Decimal` / `numeric`). Exact microcredits stay on `ToolInvocation` for auditability. OpenRouter stays free via model policy.
 
 ## Endpoints
 

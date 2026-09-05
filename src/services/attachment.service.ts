@@ -1,11 +1,29 @@
 import { AppError } from '@/lib/errors';
 import { instantToIso } from '@/lib/cursor';
+import {
+  publicObjectUrl,
+  storageKeyFromPrivateR2Url,
+} from '@/providers/storage';
 import { ChatRepository } from '@/repositories/chat.repository';
 import { AttachmentRepository } from '@/repositories/attachment.repository';
 import {
   createDirectUploadSignature,
   verifyTransloaditWebhookSignature,
 } from '@/providers/transloadit';
+
+/** Object key from Transloadit store fields or a private R2 result URL. */
+function resolveStorageKey(
+  file: Record<string, unknown>,
+  url: string,
+): string | null {
+  const fromField =
+    (typeof file.key === 'string' && file.key) ||
+    (typeof file.path === 'string' && file.path) ||
+    null;
+  if (fromField) return fromField.replace(/^\/+/, '');
+
+  return storageKeyFromPrivateR2Url(url);
+}
 
 export type CreateAttachmentInput = {
   userId: string;
@@ -83,11 +101,7 @@ function pickStoreResult(assembly: Record<string, unknown>): {
           ? file.type
           : undefined;
     const storageKey =
-      typeof file.key === 'string'
-        ? file.key
-        : typeof file.path === 'string'
-          ? file.path
-          : undefined;
+      resolveStorageKey(file, url) ?? undefined;
     return { url, sizeBytes, mimeType, storageKey };
   }
   return null;
@@ -158,14 +172,24 @@ export async function applyAssembly(assembly: Record<string, unknown>): Promise<
     return { ok: true, failed: true as const, attachmentId };
   }
 
-  const storageKey = file.storageKey ?? `attachments/unknown/${attachmentId}`;
+  const storageKey = file.storageKey
+    ? file.storageKey.replace(/^\/+/, '')
+    : null;
+  if (!storageKey) {
+    await AttachmentRepository.markFailed(attachmentId, {
+      error: 'Store result missing R2 object key',
+      assemblyId,
+      storeUrl: file.url,
+    });
+    return { ok: true, failed: true as const, attachmentId };
+  }
 
   await AttachmentRepository.markCompleted({
     id: attachmentId,
     transloaditAssemblyId: assemblyId ?? attachmentId,
     storageProvider: 'r2',
     storageKey,
-    resultUrl: file.url,
+    resultUrl: publicObjectUrl(storageKey),
     sizeBytes: file.sizeBytes,
     mimeType: file.mimeType,
   });

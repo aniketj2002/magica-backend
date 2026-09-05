@@ -33,7 +33,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'3c8711d0f2fb7dfd63467e81840e7266d7a3c6cb44c5ec23dd17e52d3d412948'>;
+  StorageHashBase<'c593fb5e21f82d47ee3d822dc2ac884eec5db2240c12e206a69d71baf91aaf6c'>;
 export type ExecutionHash =
   ExecutionHashBase<'f130d18dbd43bfbf2cac8cf439afff6e5e2e248902409901e3bace7fdfb7e2e5'>;
 export type ProfileHash =
@@ -944,7 +944,7 @@ type ContractBase = Omit<
                   readonly nullable: false;
                   readonly default: {
                     readonly kind: 'literal';
-                    readonly value: DefaultLiteralValue<'pg/numeric@1', 0>;
+                    readonly value: DefaultLiteralValue<'pg/numeric@1', '0'>;
                   };
                 };
                 readonly settledCredits: {
@@ -953,7 +953,7 @@ type ContractBase = Omit<
                   readonly nullable: false;
                   readonly default: {
                     readonly kind: 'literal';
-                    readonly value: DefaultLiteralValue<'pg/numeric@1', 0>;
+                    readonly value: DefaultLiteralValue<'pg/numeric@1', '0'>;
                   };
                 };
                 readonly metadata: {
@@ -1882,7 +1882,7 @@ type ContractBase = Omit<
                   readonly nullable: false;
                   readonly default: {
                     readonly kind: 'literal';
-                    readonly value: DefaultLiteralValue<'pg/numeric@1', 0>;
+                    readonly value: DefaultLiteralValue<'pg/numeric@1', '0'>;
                   };
                 };
                 readonly createdAt: {

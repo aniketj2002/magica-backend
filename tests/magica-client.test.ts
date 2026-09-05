@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { MagicaError } from '@/providers/magica/errors';
-import { toAppCredits, MICROCREDITS_PER_CREDIT } from '@/providers/magica/credits';
+import { toAppCredits, toDecimalString, MICROCREDITS_PER_CREDIT } from '@/providers/magica/credits';
 import { runNode, getNodeRun } from '@/providers/magica/nodes';
 import { estimateCredits } from '@/providers/magica/pricing';
 
@@ -15,12 +15,22 @@ afterEach(() => {
 });
 
 describe('toAppCredits', () => {
-  it('ceils microcredits to whole app credits (never below 1 for billable work)', () => {
-    // crop_image ≈ 5_000 microcredits → 1 app credit at markup 1
-    expect(toAppCredits(5_000)).toBe(1);
+  it('converts microcredits to fractional app credits with no minimum', () => {
+    // crop_image ≈ 5_000 microcredits → 0.005 app credits at markup 1
+    expect(toAppCredits(5_000)).toBe(0.005);
+    expect(toAppCredits(MICROCREDITS_PER_CREDIT - 1)).toBe(0.999999);
     expect(toAppCredits(MICROCREDITS_PER_CREDIT)).toBe(1);
-    expect(toAppCredits(MICROCREDITS_PER_CREDIT + 1)).toBe(2);
+    expect(toAppCredits(MICROCREDITS_PER_CREDIT + 1)).toBe(1.000001);
     expect(toAppCredits(0)).toBe(0);
+  });
+});
+
+describe('toDecimalString', () => {
+  it('emits canonical numeric text for Decimal columns', () => {
+    expect(toDecimalString(0.005)).toBe('0.005');
+    expect(toDecimalString(-0.005)).toBe('-0.005');
+    expect(toDecimalString(1)).toBe('1');
+    expect(toDecimalString(0)).toBe('0');
   });
 });
 

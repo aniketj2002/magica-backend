@@ -82,6 +82,7 @@ vi.mock('@/prisma/db', () => ({
             Chat: {
               where: vi.fn(() => ({
                 first: mockFindChat,
+                update: vi.fn(async () => undefined),
               })),
             },
           },
@@ -93,6 +94,7 @@ vi.mock('@/prisma/db', () => ({
         Chat: {
           where: vi.fn(() => ({
             first: mockFindChat,
+            update: vi.fn(async () => undefined),
           })),
         },
       },
@@ -108,6 +110,7 @@ describe('ChatMessageService concurrency + idempotency', () => {
     mockFindChat.mockResolvedValue({
       id: 'chat-1',
       userId: 'user-1',
+      title: null,
       activeRunId: null,
     });
     mockCreateMessage.mockResolvedValue({ id: 'msg-1' });

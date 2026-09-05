@@ -1,5 +1,6 @@
 import { AppError } from '@/lib/errors';
 import { decodeCursor, encodeCursor, instantToIso } from '@/lib/cursor';
+import { deriveChatTitle } from '@/lib/chatTitle';
 import { ChatRepository } from '@/repositories/chat.repository';
 
 const DEFAULT_LIMIT = 20;
@@ -15,6 +16,18 @@ export const ChatService = {
     const chat = await ChatRepository.findByIdForUser(chatId, userId);
     if (!chat) throw AppError.notFound();
     return serializeChat(chat);
+  },
+
+  async updateChatTitle(chatId: string, userId: string, title: string) {
+    const chat = await ChatRepository.findByIdForUser(chatId, userId);
+    if (!chat) throw AppError.notFound();
+    const next = deriveChatTitle(title);
+    const updated = await ChatRepository.updateTitle({
+      chatId,
+      userId,
+      title: next,
+    });
+    return serializeChat(updated ?? { ...chat, title: next });
   },
 
   async listChats(opts: {

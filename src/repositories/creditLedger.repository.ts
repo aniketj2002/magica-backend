@@ -1,6 +1,7 @@
 import { isUniqueConstraintViolation } from '@prisma/orm-family-sql/errors';
 import { db } from '../prisma/db';
 import type { OrmClient } from '../prisma/orm';
+import { toDecimalString } from '@/providers/magica/credits';
 
 /** Fixed minimum reservation for an agent run (tools charge separately later). */
 export const DEFAULT_RUN_CREDIT_RESERVATION = 1;
@@ -10,7 +11,7 @@ export const CreditLedgerRepository = {
     return await db.orm.public.CreditLedger.create({
       userId,
       type: 'ADJUSTMENT',
-      amount,
+      amount: toDecimalString(amount),
     });
   },
 
@@ -29,7 +30,7 @@ export const CreditLedgerRepository = {
     },
     client: OrmClient = db,
   ) {
-    const amount = -Math.abs(opts.amount);
+    const amount = toDecimalString(-Math.abs(opts.amount));
     const idempotencyKey =
       opts.seq !== undefined
         ? `reserve:${opts.agentRunId}:${opts.seq}`
@@ -86,7 +87,7 @@ export const CreditLedgerRepository = {
         userId: opts.userId,
         agentRunId: opts.agentRunId,
         type: 'RELEASE',
-        amount: releaseAmount,
+        amount: toDecimalString(releaseAmount),
         idempotencyKey: `release:${opts.agentRunId}`,
       });
       return true;
@@ -120,14 +121,14 @@ export const CreditLedgerRepository = {
           userId: opts.userId,
           agentRunId: opts.agentRunId,
           type: 'RELEASE',
-          amount: releaseAmount,
+          amount: toDecimalString(releaseAmount),
           idempotencyKey: `release:${opts.agentRunId}`,
         },
         {
           userId: opts.userId,
           agentRunId: opts.agentRunId,
           type: 'CHARGE',
-          amount: chargeAmount,
+          amount: toDecimalString(chargeAmount),
           idempotencyKey: `charge:${opts.agentRunId}`,
         },
       ]);

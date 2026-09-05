@@ -8,6 +8,7 @@ import { db } from '@/prisma/db';
 import {
   estimateCredits,
   getNodeRun,
+  isMagicaVcrMock,
   runNode,
   toAppCredits,
   type MagicaNodeRun,
@@ -154,6 +155,15 @@ async function runMagicaNode<I, O>(
     pollPayload,
     { idempotencyKey: `magica-poll:${ctx.toolCallId}` },
   );
+
+  // Mock mode: complete the wait token immediately so we don't burn the poll
+  // backoff schedule. Poll/webhook completion of an already-done token is a no-op.
+  if (isMagicaVcrMock()) {
+    const mocked = await getNodeRun(accepted.runId);
+    if (TERMINAL_STATUSES.has(mocked.status)) {
+      await wait.completeToken(token.id, mocked);
+    }
+  }
 
   const res = await wait.forToken<MagicaNodeRun>(token);
   if (!res.ok) {

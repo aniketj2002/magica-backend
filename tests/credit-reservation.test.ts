@@ -123,7 +123,7 @@ describe('CreditReservationService', () => {
     expect(mockLedgerCreate).toHaveBeenCalledWith(
       expect.objectContaining({
         type: 'RESERVATION',
-        amount: -1,
+        amount: '-1',
         idempotencyKey: 'reserve:run-1:1',
       }),
     );
@@ -141,7 +141,7 @@ describe('CreditReservationService', () => {
     expect(mockLedgerCreate).toHaveBeenLastCalledWith(
       expect.objectContaining({
         idempotencyKey: 'reserve:run-1:2',
-        amount: -2,
+        amount: '-2',
       }),
     );
   });
@@ -178,11 +178,11 @@ describe('CreditReservationService', () => {
       toolInvocationId: 'inv-1',
       microcredits: 5_000,
     });
-    expect(first).toEqual({ credits: 1, alreadySettled: false });
+    expect(first).toEqual({ credits: 0.005, alreadySettled: false });
     expect(mockLedgerCreate).toHaveBeenCalledWith(
       expect.objectContaining({
         type: 'CHARGE',
-        amount: -1,
+        amount: '-0.005',
         idempotencyKey: 'charge:tool:inv-1',
         toolInvocationId: 'inv-1',
       }),
@@ -196,7 +196,7 @@ describe('CreditReservationService', () => {
       toolInvocationId: 'inv-1',
       microcredits: 5_000,
     });
-    expect(second).toEqual({ credits: 1, alreadySettled: true });
+    expect(second).toEqual({ credits: 0.005, alreadySettled: true });
   });
 });
 
@@ -235,7 +235,7 @@ describe('CreditService.finalizeRunBilling release math', () => {
         userId: 'user-1',
         agentRunId: 'run-1',
         type: 'CHARGE',
-        amount: 0,
+        amount: '0',
         idempotencyKey: 'charge:model:run-1',
       }),
     );

@@ -27,8 +27,8 @@ model AgentRun {
   completionTokens Int?
   totalTokens      Int?
 
-  reservedCredits  Int      @default(0)
-  settledCredits   Int      @default(0)
+  reservedCredits  Decimal  @default(0)
+  settledCredits   Decimal  @default(0)
   
   metadata       Json?
   
@@ -105,7 +105,7 @@ model CreditLedger {
   toolInvocationId String?
   
   type             LedgerTransactionType
-  amount           Int
+  amount           Decimal
   
   idempotencyKey   String? @unique
   
@@ -270,8 +270,8 @@ model ToolInvocation {
   
   durationMs    Int?
   
-  estimatedCredits Int?
-  actualCredits    Int?
+  estimatedCredits Decimal?
+  actualCredits    Decimal?
   estimatedMicrocredits Int?
   actualMicrocredits    Int?
   
@@ -302,7 +302,7 @@ model User {
   clerkId   String   @unique
   name      String?
   email     String?
-  balance   Int      @default(0)
+  balance   Decimal  @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime 
 

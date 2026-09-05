@@ -72,6 +72,7 @@ describe('createDirectUploadSignature', () => {
     expect(a.signature.startsWith('sha384:')).toBe(true);
     expect(a.parsed.notify_url).toContain('/api/webhooks/transloadit');
     expect(a.parsed.steps.store.robot).toBe('/cloudflare/store');
+    expect(a.parsed.steps.store.result).toBe(true);
     expect(a.parsed.steps.store.path).toContain('attachments/user-1/att-1/');
   });
 
@@ -157,6 +158,104 @@ describe('AttachmentService.handleWebhook', () => {
         sizeBytes: 1234,
       }),
     );
+  });
+
+  it('rewrites Transloadit private R2 URLs to R2_PUBLIC_BASE_URL', async () => {
+    const assembly = {
+      ok: 'ASSEMBLY_COMPLETED',
+      assembly_id: 'asm_1',
+      fields: { attachmentId: 'att-1' },
+      results: {
+        store: [
+          {
+            ssl_url:
+              'https://magica-media-vitest.r2_account_vitest.r2.cloudflarestorage.com/attachments/user-1/att-1/a.png',
+            size: 1234,
+            mime: 'image/png',
+            path: 'attachments/user-1/att-1/a.png',
+          },
+        ],
+      },
+    };
+    const payload = JSON.stringify(assembly);
+    const signature = signPayload(payload);
+
+    await AttachmentService.handleWebhook({
+      transloaditPayload: payload,
+      signature,
+    });
+
+    expect(mockMarkCompleted).toHaveBeenCalledWith(
+      expect.objectContaining({
+        storageKey: 'attachments/user-1/att-1/a.png',
+        resultUrl: 'https://media.test.local/attachments/user-1/att-1/a.png',
+      }),
+    );
+  });
+
+  it('derives storageKey from R2 ssl_url when key/path are missing', async () => {
+    const assembly = {
+      ok: 'ASSEMBLY_COMPLETED',
+      assembly_id: 'asm_1',
+      fields: { attachmentId: 'att-1' },
+      results: {
+        store: [
+          {
+            ssl_url:
+              'https://magica-media-vitest.r2_account_vitest.r2.cloudflarestorage.com/attachments/user-1/att-1/20260903_153121.jpg',
+            size: 1234,
+            mime: 'image/jpeg',
+          },
+        ],
+      },
+    };
+    const payload = JSON.stringify(assembly);
+    const signature = signPayload(payload);
+
+    await AttachmentService.handleWebhook({
+      transloaditPayload: payload,
+      signature,
+    });
+
+    expect(mockMarkCompleted).toHaveBeenCalledWith(
+      expect.objectContaining({
+        storageKey: 'attachments/user-1/att-1/20260903_153121.jpg',
+        resultUrl:
+          'https://media.test.local/attachments/user-1/att-1/20260903_153121.jpg',
+      }),
+    );
+    expect(mockMarkCompleted.mock.calls[0][0].resultUrl).not.toContain(
+      '/attachments/unknown/',
+    );
+  });
+
+  it('fails instead of inventing attachments/unknown keys', async () => {
+    const assembly = {
+      ok: 'ASSEMBLY_COMPLETED',
+      assembly_id: 'asm_1',
+      fields: { attachmentId: 'att-1' },
+      results: {
+        store: [
+          {
+            // Temp Transloadit CDN URL — not an R2 object key
+            ssl_url: 'https://tmp.transloadit.com/files/abc123/a.png',
+            size: 1234,
+            mime: 'image/png',
+          },
+        ],
+      },
+    };
+    const payload = JSON.stringify(assembly);
+    const signature = signPayload(payload);
+
+    const result = await AttachmentService.handleWebhook({
+      transloaditPayload: payload,
+      signature,
+    });
+
+    expect(result).toMatchObject({ ok: true, failed: true, attachmentId: 'att-1' });
+    expect(mockMarkCompleted).not.toHaveBeenCalled();
+    expect(mockMarkFailed).toHaveBeenCalled();
   });
 
   it('rejects an invalid signature with unauthorized', async () => {

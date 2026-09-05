@@ -27,6 +27,10 @@ vi.mock('@/agent/finalize', () => ({
 
 vi.mock('@trigger.dev/sdk', () => ({
   runs: { cancel: vi.fn() },
+  auth: { createPublicToken: vi.fn(async () => 'public-token') },
+  streams: {
+    define: vi.fn(() => ({ id: 'agent' })),
+  },
   logger: {
     debug: vi.fn(),
     info: vi.fn(),
