@@ -63,6 +63,13 @@ export async function finalizeAgentRun(args: FinalizeArgs): Promise<FinalizeResu
       tokensUsed,
       modelId,
     );
+    // Heal orphan STREAMING assistant rows if a prior finalize wrote the run
+    // terminal status then crashed before updating the message.
+    await healStreamingAssistantMessage(
+      run.id,
+      run.status as TerminalRunStatus,
+      args,
+    );
     return {
       agentRunId: run.id,
       status: run.status as TerminalRunStatus,
@@ -142,6 +149,51 @@ export async function finalizeAgentRun(args: FinalizeArgs): Promise<FinalizeResu
     status: args.status,
     alreadyTerminal: false,
   };
+}
+
+/**
+ * If the run is already terminal but the assistant message is still STREAMING,
+ * flip it to match. Covers crash-between-run-and-message and retry paths.
+ */
+async function healStreamingAssistantMessage(
+  agentRunId: string,
+  runStatus: TerminalRunStatus,
+  args: FinalizeArgs,
+): Promise<void> {
+  const assistantMessageId =
+    args.assistantMessageId ??
+    (await MessageRepository.findLastAssistantMessageForRun(agentRunId))?.id ??
+    null;
+  if (!assistantMessageId) return;
+
+  const existing = await MessageRepository.findById(assistantMessageId);
+  if (!existing || existing.status !== 'STREAMING') return;
+
+  const messageStatus =
+    runStatus === 'COMPLETED'
+      ? 'COMPLETED'
+      : runStatus === 'CANCELLED'
+        ? 'CANCELLED'
+        : 'FAILED';
+
+  let content = args.content ?? parseContentBlocks(existing.content);
+  if (runStatus === 'CANCELLED' || runStatus === 'FAILED') {
+    content = closeOpenToolUses(content, {
+      content: {
+        error: args.errorCode ?? runStatus.toLowerCase(),
+        message:
+          args.errorMessage ??
+          (runStatus === 'CANCELLED' ? 'Run cancelled' : 'Run failed'),
+      },
+      isError: true,
+    });
+  }
+
+  await MessageRepository.updateMessageStatus(
+    assistantMessageId,
+    messageStatus,
+    content,
+  );
 }
 
 /** Mark RUNNING/QUEUED tool invocations and pending waitpoints as cancelled. */
