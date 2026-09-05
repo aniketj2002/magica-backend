@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "fingerprint": "46a06898851da17d",
+  "recordedAt": "2026-09-05T11:49:41.899Z",
+  "updatedAt": "2026-09-05T11:49:57.725Z",
+  "steps": [
+    {
+      "op": "estimate-credits",
+      "method": "POST",
+      "path": "/v1/nodes/estimate-credits",
+      "requestBody": {
+        "nodes": [
+          {
+            "type": "gpt_image_2",
+            "data": {
+              "prompt": "mountain",
+              "size": "1024x1024"
+            },
+            "subModelId": "gpt-image-2-text"
+          }
+        ]
+      },
+      "status": 200,
+      "responseBody": {
+        "estimates": [
+          {
+            "microcredits": 210720
+          }
+        ]
+      },
+      "recordedAt": "2026-09-05T11:49:41.899Z"
+    },
+    {
+      "op": "run",
+      "method": "POST",
+      "path": "/v1/nodes/gpt_image_2/run",
+      "requestBody": {
+        "input": {
+          "prompt": "mountain",
+          "size": "1024x1024"
+        },
+        "subModelId": "gpt-image-2-text"
+      },
+      "status": 202,
+      "responseBody": {
+        "runId": "cmtobm4rl00nnic04fov78qmi"
+      },
+      "recordedAt": "2026-09-05T11:49:55.281Z"
+    },
+    {
+      "op": "get-run",
+      "method": "GET",
+      "path": "/v1/nodes/runs/cmtobm4rl00nnic04fov78qmi",
+      "status": 200,
+      "responseBody": {
+        "id": "cmtobm4rl00nnic04fov78qmi",
+        "nodeType": "gpt_image_2",
+        "subModelId": "gpt-image-2-text",
+        "status": "QUEUED",
+        "input": {
+          "n": 1,
+          "size": "1024x1024",
+          "prompt": "mountain",
+          "quality": "High",
+          "background": "Auto",
+          "output_format": "PNG",
+          "output_compression": 80
+        },
+        "output": null,
+        "error": null,
+        "userMessage": null,
+        "creditUsed": 0,
+        "triggerRunId": "run_06g72pquru7ubcgjtdb2v4oi01",
+        "source": "api",
+        "createdAt": "2026-09-05T11:49:54.466Z"
+      },
+      "recordedAt": "2026-09-05T11:49:57.725Z"
+    }
+  ],
+  "chain": {
+    "nodeType": "gpt_image_2",
+    "subModelId": "gpt-image-2-text",
+    "input": {
+      "prompt": "mountain",
+      "size": "1024x1024"
+    }
+  }
+}

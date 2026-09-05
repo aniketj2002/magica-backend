@@ -14,6 +14,10 @@ export type AgentRunRealtime = {
   publicAccessToken: string;
 };
 
+export type SerializedAgentRun = ReturnType<typeof serializeRun> & {
+  realtime?: AgentRunRealtime;
+};
+
 export const AgentRunService = {
   async getRun(runId: string, userId: string) {
     const run = await AgentRunRepository.findByIdForUser(runId, userId);
@@ -97,7 +101,7 @@ async function serializeRunWithRealtime(run: {
   completedAt: unknown;
   createdAt: unknown;
   updatedAt: unknown;
-}) {
+}): Promise<SerializedAgentRun> {
   const base = serializeRun(run);
   if (TERMINAL_STATUSES.has(run.status) || !run.triggerRunId) {
     return base;

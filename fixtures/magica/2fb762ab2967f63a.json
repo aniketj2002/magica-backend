@@ -1,0 +1,74 @@
+{
+  "version": 1,
+  "fingerprint": "2fb762ab2967f63a",
+  "recordedAt": "2026-09-05T11:48:21.863Z",
+  "updatedAt": "2026-09-05T11:49:17.748Z",
+  "steps": [
+    {
+      "op": "estimate-credits",
+      "method": "POST",
+      "path": "/v1/nodes/estimate-credits",
+      "requestBody": {
+        "nodes": [
+          {
+            "type": "gpt_image_2",
+            "data": {
+              "prompt": "A majestic snow-capped mountain peak under a clear blue sky, dramatic clouds, realistic landscape, high detail, cinematic lighting",
+              "size": "landscape",
+              "quality": "high"
+            },
+            "subModelId": "gpt-image-2-text"
+          }
+        ]
+      },
+      "status": 200,
+      "responseBody": {
+        "estimates": [
+          {
+            "microcredits": 210720
+          }
+        ]
+      },
+      "recordedAt": "2026-09-05T11:48:21.863Z"
+    },
+    {
+      "op": "run",
+      "method": "POST",
+      "path": "/v1/nodes/gpt_image_2/run",
+      "requestBody": {
+        "input": {
+          "prompt": "A majestic snow-capped mountain peak under a clear blue sky, dramatic clouds, realistic landscape, high detail, cinematic lighting",
+          "size": "landscape",
+          "quality": "high"
+        },
+        "subModelId": "gpt-image-2-text"
+      },
+      "status": 400,
+      "responseBody": {
+        "error": "Invalid request.",
+        "message": "Invalid request.",
+        "code": "BAD_REQUEST",
+        "details": {
+          "issueCount": 1,
+          "issues": [
+            {
+              "code": "custom",
+              "pathDepth": 1
+            }
+          ]
+        },
+        "traceId": "01a07166-ccc5-7bba-88fd-d5f221521770"
+      },
+      "recordedAt": "2026-09-05T11:49:17.748Z"
+    }
+  ],
+  "chain": {
+    "nodeType": "gpt_image_2",
+    "subModelId": "gpt-image-2-text",
+    "input": {
+      "prompt": "A majestic snow-capped mountain peak under a clear blue sky, dramatic clouds, realistic landscape, high detail, cinematic lighting",
+      "size": "landscape",
+      "quality": "high"
+    }
+  }
+}

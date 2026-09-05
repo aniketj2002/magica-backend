@@ -1,6 +1,12 @@
 import { z } from 'zod';
 import { createMagicaNodeTool, extractUrlArray } from './node-tool';
 
+/** Magica gpt_image_2 rejects values like "standard" (BAD_REQUEST). */
+const GptImage2QualitySchema = z
+  .enum(['low', 'medium', 'high'])
+  .default('high')
+  .describe('Image quality. Defaults to high.');
+
 const GptImage2InputSchema = z.object({
   prompt: z.string().min(1).describe('Text prompt for generation or edit'),
   uploadedImages: z
@@ -11,7 +17,7 @@ const GptImage2InputSchema = z.object({
     .describe('Source images for edit mode (1–10). Omit for text-to-image.'),
   mask: z.string().url().optional().describe('Optional mask URL for edit mode'),
   size: z.string().optional(),
-  quality: z.string().optional(),
+  quality: GptImage2QualitySchema,
   background: z.string().optional(),
   n: z.number().int().min(1).max(4).optional(),
   output_format: z.string().optional(),
@@ -28,7 +34,7 @@ export type GptImage2Output = z.infer<typeof GptImage2OutputSchema>;
 export const gptImage2Tool = createMagicaNodeTool({
   name: 'gpt_image_2',
   description:
-    'Generate or edit images with GPT Image 2. Pass uploadedImages to edit; omit for text-to-image.',
+    'Generate or edit images with GPT Image 2. Pass uploadedImages to edit; omit for text-to-image. Prefer quality "high" (default).',
   inputSchema: GptImage2InputSchema,
   outputSchema: GptImage2OutputSchema,
   pricing: {
@@ -43,11 +49,13 @@ export const gptImage2Tool = createMagicaNodeTool({
       ? 'gpt-image-2-edit'
       : 'gpt-image-2-text',
   toNodeInput: (input) => {
-    const data: Record<string, unknown> = { prompt: input.prompt };
+    const data: Record<string, unknown> = {
+      prompt: input.prompt,
+      quality: input.quality,
+    };
     if (input.uploadedImages?.length) data.uploadedImages = input.uploadedImages;
     if (input.mask) data.mask = input.mask;
     if (input.size !== undefined) data.size = input.size;
-    if (input.quality !== undefined) data.quality = input.quality;
     if (input.background !== undefined) data.background = input.background;
     if (input.n !== undefined) data.n = input.n;
     if (input.output_format !== undefined) data.output_format = input.output_format;

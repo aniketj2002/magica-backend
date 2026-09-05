@@ -17,6 +17,7 @@
     "@clerk/nextjs": "^7.9.0",
     "@js-temporal/polyfill": "^0.5.1",
     "@prisma/client": "^7.10.0",
+    "@prisma/orm-family-sql": "8.0.0-rc.8",
     "@prisma/orm-postgres": "^8.0.0-rc.8",
     "@trigger.dev/sdk": "^4.5.16",
     "dotenv": "^17.4.2",

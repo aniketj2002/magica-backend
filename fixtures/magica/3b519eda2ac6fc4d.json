@@ -1,0 +1,74 @@
+{
+  "version": 1,
+  "fingerprint": "3b519eda2ac6fc4d",
+  "recordedAt": "2026-09-05T11:52:44.222Z",
+  "updatedAt": "2026-09-05T11:53:27.298Z",
+  "steps": [
+    {
+      "op": "estimate-credits",
+      "method": "POST",
+      "path": "/v1/nodes/estimate-credits",
+      "requestBody": {
+        "nodes": [
+          {
+            "type": "gpt_image_2",
+            "data": {
+              "prompt": "A serene lake at sunrise with calm water reflecting pink and orange skies, surrounded by pine mountains and a gentle mist, high resolution, photorealistic",
+              "size": "1024x1024",
+              "quality": "standard"
+            },
+            "subModelId": "gpt-image-2-text"
+          }
+        ]
+      },
+      "status": 200,
+      "responseBody": {
+        "estimates": [
+          {
+            "microcredits": 210720
+          }
+        ]
+      },
+      "recordedAt": "2026-09-05T11:52:44.222Z"
+    },
+    {
+      "op": "run",
+      "method": "POST",
+      "path": "/v1/nodes/gpt_image_2/run",
+      "requestBody": {
+        "input": {
+          "prompt": "A serene lake at sunrise with calm water reflecting pink and orange skies, surrounded by pine mountains and a gentle mist, high resolution, photorealistic",
+          "size": "1024x1024",
+          "quality": "standard"
+        },
+        "subModelId": "gpt-image-2-text"
+      },
+      "status": 400,
+      "responseBody": {
+        "error": "Invalid request.",
+        "message": "Invalid request.",
+        "code": "BAD_REQUEST",
+        "details": {
+          "issueCount": 1,
+          "issues": [
+            {
+              "code": "invalid_value",
+              "pathDepth": 1
+            }
+          ]
+        },
+        "traceId": "01a0716a-9b48-7bba-8917-b32c5e92c983"
+      },
+      "recordedAt": "2026-09-05T11:53:27.298Z"
+    }
+  ],
+  "chain": {
+    "nodeType": "gpt_image_2",
+    "subModelId": "gpt-image-2-text",
+    "input": {
+      "prompt": "A serene lake at sunrise with calm water reflecting pink and orange skies, surrounded by pine mountains and a gentle mist, high resolution, photorealistic",
+      "size": "1024x1024",
+      "quality": "standard"
+    }
+  }
+}

@@ -138,6 +138,22 @@ describe('Magica tool Zod validation + sub-model selection', () => {
     expect(edit.uploadedImages?.length).toBe(1);
   });
 
+  it('defaults gpt_image_2 quality to high and rejects Magica-invalid values', () => {
+    expect(gptImage2Tool.inputSchema.parse({ prompt: 'lake' }).quality).toBe(
+      'high',
+    );
+    expect(
+      gptImage2Tool.inputSchema.safeParse({
+        prompt: 'lake',
+        quality: 'standard',
+      }).success,
+    ).toBe(false);
+    expect(
+      gptImage2Tool.inputSchema.parse({ prompt: 'lake', quality: 'medium' })
+        .quality,
+    ).toBe('medium');
+  });
+
   it('requires at least two video_urls for merge_videos', () => {
     const parsed = mergeVideosTool.inputSchema.safeParse({
       video_urls: ['https://example.com/a.mp4'],

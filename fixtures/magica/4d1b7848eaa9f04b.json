@@ -1,0 +1,103 @@
+{
+  "version": 1,
+  "fingerprint": "4d1b7848eaa9f04b",
+  "recordedAt": "2026-09-05T12:07:13.932Z",
+  "updatedAt": "2026-09-05T12:10:17.532Z",
+  "steps": [
+    {
+      "op": "estimate-credits",
+      "method": "POST",
+      "path": "/v1/nodes/estimate-credits",
+      "requestBody": {
+        "nodes": [
+          {
+            "type": "gpt_image_2",
+            "data": {
+              "prompt": "A serene, beautiful lake surrounded by mountains, with crystal-clear water reflecting the sky and pine trees on the shore, golden hour lighting, peaceful atmosphere, photorealistic landscape",
+              "quality": "high"
+            },
+            "subModelId": "gpt-image-2-text"
+          }
+        ]
+      },
+      "status": 200,
+      "responseBody": {
+        "estimates": [
+          {
+            "microcredits": 210720
+          }
+        ]
+      },
+      "recordedAt": "2026-09-05T12:07:13.932Z"
+    },
+    {
+      "op": "run",
+      "method": "POST",
+      "path": "/v1/nodes/gpt_image_2/run",
+      "requestBody": {
+        "input": {
+          "prompt": "A serene, beautiful lake surrounded by mountains, with crystal-clear water reflecting the sky and pine trees on the shore, golden hour lighting, peaceful atmosphere, photorealistic landscape",
+          "quality": "high"
+        },
+        "subModelId": "gpt-image-2-text"
+      },
+      "status": 202,
+      "responseBody": {
+        "runId": "cmtoc91my00c3jm045xzg2juy"
+      },
+      "recordedAt": "2026-09-05T12:07:44.326Z"
+    },
+    {
+      "op": "get-run",
+      "method": "GET",
+      "path": "/v1/nodes/runs/cmtoc91my00c3jm045xzg2juy",
+      "status": 200,
+      "responseBody": {
+        "id": "cmtoc91my00c3jm045xzg2juy",
+        "nodeType": "gpt_image_2",
+        "subModelId": "gpt-image-2-text",
+        "status": "COMPLETED",
+        "input": {
+          "n": 1,
+          "prompt": "A serene, beautiful lake surrounded by mountains, with crystal-clear water reflecting the sky and pine trees on the shore, golden hour lighting, peaceful atmosphere, photorealistic landscape",
+          "quality": "High",
+          "background": "Auto",
+          "output_format": "PNG",
+          "output_compression": 80
+        },
+        "output": {
+          "result": [
+            "https://g.tlcdn.com/gen/425ad08cffc04ff6812de1f98ee73b5c.png"
+          ],
+          "provider": "openai",
+          "creditUsed": 210720,
+          "resultMetadata": [
+            {
+              "size": 2821442,
+              "width": 1536,
+              "height": 1024,
+              "modelId": "gpt-image-2",
+              "mimeType": "image/png",
+              "mediaType": "image"
+            }
+          ]
+        },
+        "error": null,
+        "userMessage": null,
+        "creditUsed": 210720,
+        "triggerRunId": "run_06g72ttelo0i0s5sges7asgt01",
+        "source": "api",
+        "createdAt": "2026-09-05T12:07:43.498Z"
+      },
+      "recordedAt": "2026-09-05T12:10:17.532Z"
+    }
+  ],
+  "chain": {
+    "nodeType": "gpt_image_2",
+    "subModelId": "gpt-image-2-text",
+    "input": {
+      "prompt": "A serene, beautiful lake surrounded by mountains, with crystal-clear water reflecting the sky and pine trees on the shore, golden hour lighting, peaceful atmosphere, photorealistic landscape",
+      "quality": "high"
+    }
+  }
+}

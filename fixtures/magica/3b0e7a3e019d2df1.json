@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "fingerprint": "3b0e7a3e019d2df1",
+  "recordedAt": "2026-09-05T11:53:46.600Z",
+  "updatedAt": "2026-09-05T11:53:46.600Z",
+  "steps": [
+    {
+      "op": "estimate-credits",
+      "method": "POST",
+      "path": "/v1/nodes/estimate-credits",
+      "requestBody": {
+        "nodes": [
+          {
+            "type": "gpt_image_2",
+            "data": {
+              "prompt": "lake"
+            },
+            "subModelId": "gpt-image-2-text"
+          }
+        ]
+      },
+      "status": 200,
+      "responseBody": {
+        "estimates": [
+          {
+            "microcredits": 210720
+          }
+        ]
+      },
+      "recordedAt": "2026-09-05T11:53:46.600Z"
+    }
+  ]
+}
