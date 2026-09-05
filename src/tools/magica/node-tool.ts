@@ -51,8 +51,9 @@ export type CreateMagicaNodeToolOptions<I, O> = {
 };
 
 /**
- * Shared Magica node tool: estimate → wait token → runNode(webhook) →
- * poll fallback → wait.forToken → settle on COMPLETED.
+ * Shared Magica node tool: wait token → runNode(webhook) → poll fallback →
+ * wait.forToken → top up to actual credits → settle on COMPLETED. The
+ * estimated cost is already reserved by `executeTool` before we get here.
  */
 export function createMagicaNodeTool<I, O>(
   opts: CreateMagicaNodeToolOptions<I, O>,
@@ -193,7 +194,14 @@ async function runMagicaNode<I, O>(
     );
   }
 
+  // The estimate was already held before runNode; top up only when Magica's
+  // actual creditUsed came in above it. No-op when actual <= estimate.
   const microcredits = run.creditUsed ?? 0;
+  await CreditReservationService.ensureReservation({
+    userId: ctx.userId,
+    agentRunId: ctx.agentRunId,
+    needed: toAppCredits(microcredits),
+  });
   await CreditReservationService.settleToolInvocation({
     toolInvocationId: ctx.toolInvocationId,
     microcredits,

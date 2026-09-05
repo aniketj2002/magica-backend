@@ -94,30 +94,107 @@ export function blocksToProviderMessages(
     return messages;
   }
 
-  // ASSISTANT
-  const text = textFromBlocks(blocks);
-  const toolCalls: ProviderToolCall[] = [];
+  return assistantBlocksToProviderMessages(blocks);
+}
+
+/**
+ * One assistant step: what the model said, what it called, and what came back.
+ * A step ends once its tool results arrive; later blocks open the next step.
+ */
+type AssistantStep = {
+  text: string;
+  toolCalls: ProviderToolCall[];
+  toolResults: ToolResultBlock[];
+};
+
+function emptyStep(): AssistantStep {
+  return { text: '', toolCalls: [], toolResults: [] };
+}
+
+function isEmptyStep(step: AssistantStep): boolean {
+  return (
+    step.text === '' &&
+    step.toolCalls.length === 0 &&
+    step.toolResults.length === 0
+  );
+}
+
+function toProviderToolCall(block: ToolUseBlock): ProviderToolCall {
+  return {
+    id: block.id,
+    name: block.name,
+    argumentsJson:
+      typeof block.input === 'string' ? block.input : JSON.stringify(block.input ?? {}),
+  };
+}
+
+/** Group a flat block list into ordered assistant steps. */
+function toAssistantSteps(blocks: ContentBlock[]): AssistantStep[] {
+  const steps: AssistantStep[] = [];
+  let step = emptyStep();
+
+  /** Anything after a tool result belongs to the following step. */
+  const startNextStepIfResultsSeen = () => {
+    if (step.toolResults.length === 0) return;
+    steps.push(step);
+    step = emptyStep();
+  };
+
   for (const block of blocks) {
-    if (block.type !== 'tool_use') continue;
-    toolCalls.push({
-      id: block.id,
-      name: block.name,
-      argumentsJson:
-        typeof block.input === 'string' ? block.input : JSON.stringify(block.input ?? {}),
-    });
+    switch (block.type) {
+      case 'text':
+        startNextStepIfResultsSeen();
+        step.text += block.text;
+        break;
+      case 'tool_use':
+        startNextStepIfResultsSeen();
+        step.toolCalls.push(toProviderToolCall(block));
+        break;
+      case 'tool_result':
+        step.toolResults.push(block);
+        break;
+      case 'thinking':
+      case 'usage':
+        // Never replayed to the provider.
+        break;
+    }
   }
 
-  if (toolCalls.length === 0 && !text) {
-    return [];
-  }
+  if (!isEmptyStep(step)) steps.push(step);
+  return steps;
+}
 
-  return [
-    {
-      role: 'assistant',
-      content: text || null,
-      toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
-    },
-  ];
+/**
+ * Map assistant content blocks → provider messages.
+ *
+ * Blocks are stored flat (text, tool_use, tool_result, …) but providers require
+ * every assistant message carrying `tool_calls` to be followed by one tool
+ * message per call, so each step becomes an assistant message plus its replies.
+ */
+export function assistantBlocksToProviderMessages(
+  blocks: ContentBlock[],
+): ProviderMessage[] {
+  return toAssistantSteps(blocks).flatMap((step) => {
+    const messages: ProviderMessage[] = [];
+
+    if (step.text || step.toolCalls.length > 0) {
+      messages.push({
+        role: 'assistant',
+        content: step.text || null,
+        toolCalls: step.toolCalls.length > 0 ? step.toolCalls : undefined,
+      });
+    }
+
+    for (const result of step.toolResults) {
+      messages.push({
+        role: 'tool',
+        toolCallId: result.toolUseId,
+        content: stringifyToolResult(result.content),
+      });
+    }
+
+    return messages;
+  });
 }
 
 function stringifyToolResult(content: unknown): string {

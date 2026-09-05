@@ -3,6 +3,7 @@ export {
   contentBlocksSchema,
   parseContentBlocks,
   blocksToProviderMessages,
+  assistantBlocksToProviderMessages,
   textFromBlocks,
   mergeTextDelta,
   mergeThinkingDelta,
