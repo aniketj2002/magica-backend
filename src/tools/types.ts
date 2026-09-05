@@ -8,6 +8,16 @@ export type ToolProgressPart = {
   status: string;
 };
 
+export type ToolApprovalRequiredPart = {
+  type: 'tool-approval-required';
+  id: string;
+  name: string;
+  /** App credits that will be reserved if the user approves. */
+  credits: number;
+};
+
+export type ToolEmitPart = ToolProgressPart | ToolApprovalRequiredPart;
+
 export type ToolContext = {
   agentRunId: string;
   chatId: string;
@@ -19,8 +29,8 @@ export type ToolContext = {
   toolCallId: string;
   /** Persisted ToolInvocation row for this call. */
   toolInvocationId: string;
-  /** Optional stream emit (e.g. tool-progress while waiting on Magica). */
-  emit?: (part: ToolProgressPart) => void | Promise<void>;
+  /** Optional stream emit (tool-progress / tool-approval-required). */
+  emit?: (part: ToolEmitPart) => void | Promise<void>;
 };
 
 export type ToolPricing = {

@@ -9,9 +9,16 @@ Magica tools use **progressive credit reservation**, not per-token settlement.
 
 ## Flow
 
-1. **Send-time** — reserve a minimum hold when the message is accepted (skipped for free models).
-2. **Magica tools** — after waitpoint approval (`wait.forToken`), reserve against Magica's actual `creditUsed`, then settle with an idempotent `CHARGE` keyed as `charge:tool:{toolInvocationId}`. If the balance cannot cover it, the run interrupts with **402** / `insufficient_credits`.
-3. **Finalize** — release `reservedCredits - settledCredits`.
+1. **Send-time** — reserve a minimum hold when the message is accepted. Free models (OpenRouter today) hold **0**.
+2. **Tool approval** — when the agent calls a paid tool (`estimatedCredits > 0`), the run parks on a Trigger waitpoint (`tool_approval`, 1h timeout). The client shows the app credit cost and the user must approve or reject. Free tools skip this step.
+3. **Reserve after approve** — on approval, hold the estimated credits. If the balance cannot cover it, the tool never starts and the run fails with `insufficient_credits`. Reject / timeout returns a failed tool result (`approval_rejected` / `approval_timed_out`) so the agent can continue.
+4. **Top-up + settle** — after the Magica waitpoint resumes, top up if actual `creditUsed` exceeded the estimate, then settle with an idempotent `CHARGE` keyed as `charge:tool:{toolInvocationId}`.
+5. **Finalize** — release `reservedCredits - settledCredits`.
+
+## Approval endpoints
+
+- `POST /api/v1/runs/:runId/tool-calls/:toolCallId/approve`
+- `POST /api/v1/runs/:runId/tool-calls/:toolCallId/reject`
 
 ## Conversion
 

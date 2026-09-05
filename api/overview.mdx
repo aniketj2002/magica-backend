@@ -16,6 +16,8 @@ Base path for product APIs: `/api/v1`. All v1 routes require a Clerk session unl
 | `POST` | `/api/v1/chats/:chatId/messages` | Send + start run |
 | `GET` | `/api/v1/runs/:runId` | Durable run status |
 | `POST` | `/api/v1/runs/:runId/cancel` | Cancel run |
+| `POST` | `/api/v1/runs/:runId/tool-calls/:toolCallId/approve` | Approve paid tool |
+| `POST` | `/api/v1/runs/:runId/tool-calls/:toolCallId/reject` | Reject paid tool |
 | `GET` | `/api/v1/tools` | Registered tools + pricing metadata |
 | `POST` | `/api/v1/tools/:name/estimate` | Estimate credits |
 | `GET` | `/api/v1/credits` | Current balance |
