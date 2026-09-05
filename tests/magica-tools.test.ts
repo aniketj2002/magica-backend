@@ -8,6 +8,7 @@ const {
   mockForToken,
   mockTasksTrigger,
   mockUpdateState,
+  mockEnsureReservation,
   mockSettle,
   mockMirror,
   mockWaitpointCreate,
@@ -21,6 +22,7 @@ const {
   mockForToken: vi.fn(),
   mockTasksTrigger: vi.fn(async () => ({ id: 'poll-1' })),
   mockUpdateState: vi.fn(async () => undefined),
+  mockEnsureReservation: vi.fn(async () => ({ reservedCredits: 1, topUp: 1 })),
   mockSettle: vi.fn(async () => ({ credits: 1, alreadySettled: false })),
   mockMirror: vi.fn(
     async (opts: { sourceUrls: string[] }) =>
@@ -60,7 +62,10 @@ vi.mock('@/repositories/agentRun.repository', () => ({
 }));
 
 vi.mock('@/services/creditReservation.service', () => ({
-  CreditReservationService: { settleToolInvocation: mockSettle },
+  CreditReservationService: {
+    ensureReservation: mockEnsureReservation,
+    settleToolInvocation: mockSettle,
+  },
 }));
 
 vi.mock('@/services/media.service', () => ({
@@ -179,6 +184,11 @@ describe('gpt_image_2 sub-model + durable output mapping', () => {
         input: expect.objectContaining({ prompt: 'a red circle' }),
       }),
     );
+    expect(mockEnsureReservation).toHaveBeenCalledWith({
+      userId: 'user-1',
+      agentRunId: 'run-1',
+      needed: 1,
+    });
     expect(mockSettle).toHaveBeenCalledWith({
       toolInvocationId: 'inv-1',
       microcredits: 50_000,

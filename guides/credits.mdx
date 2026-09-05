@@ -9,10 +9,9 @@ Magica tools use **progressive credit reservation**, not per-token settlement.
 
 ## Flow
 
-1. **Send-time** — reserve a minimum hold when the message is accepted.
-2. **Mid-run top-ups** — conditional `tryDebitBalance` when the next tool or model hold needs more. If the balance cannot cover it, the run interrupts with **402** / `insufficient_credits`.
-3. **Settle** — completed tools settle with an idempotent `CHARGE` keyed as `charge:tool:{toolInvocationId}`.
-4. **Finalize** — release `reservedCredits - settledCredits`.
+1. **Send-time** — reserve a minimum hold when the message is accepted (skipped for free models).
+2. **Magica tools** — after waitpoint approval (`wait.forToken`), reserve against Magica's actual `creditUsed`, then settle with an idempotent `CHARGE` keyed as `charge:tool:{toolInvocationId}`. If the balance cannot cover it, the run interrupts with **402** / `insufficient_credits`.
+3. **Finalize** — release `reservedCredits - settledCredits`.
 
 ## Conversion
 

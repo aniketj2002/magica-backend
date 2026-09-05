@@ -18,6 +18,7 @@ const {
     userId: 'user-1',
     reservedCredits: 0,
     settledCredits: 0,
+    status: 'COMPLETED',
   };
   const mockInvocation = {
     id: 'inv-1',
@@ -52,7 +53,7 @@ vi.mock('@/services/modelCredits.policy', () => ({
   estimateModelCredits: vi.fn(() => 0),
 }));
 
-function makeTx() {
+function makeTx(opts?: { existingCharge?: boolean }) {
   return {
     orm: {
       public: {
@@ -69,6 +70,9 @@ function makeTx() {
         },
         CreditLedger: {
           where: vi.fn(() => ({
+            first: vi.fn(async () =>
+              opts?.existingCharge ? { id: 'existing-charge', type: 'CHARGE' } : null,
+            ),
             all: mockLedgerAll,
           })),
           create: mockLedgerCreate,
@@ -201,6 +205,7 @@ describe('CreditService.finalizeRunBilling release math', () => {
     vi.clearAllMocks();
     mockRun.reservedCredits = 5;
     mockRun.settledCredits = 2;
+    mockRun.status = 'COMPLETED';
     mockCreateRelease.mockResolvedValue(true);
     mockTransaction.mockImplementation(async (fn: (tx: unknown) => Promise<unknown>) =>
       fn(makeTx()),
@@ -219,5 +224,31 @@ describe('CreditService.finalizeRunBilling release math', () => {
       expect.anything(),
     );
     expect(mockAdjustBalance).toHaveBeenCalledWith('user-1', 3, expect.anything());
+  });
+
+  it('writes a zero CHARGE for free completed runs with no prior CHARGE', async () => {
+    mockLedgerCreate.mockResolvedValue({});
+    await CreditService.finalizeRunBilling('user-1', 'run-1', 10, 'openrouter/free');
+
+    expect(mockLedgerCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: 'user-1',
+        agentRunId: 'run-1',
+        type: 'CHARGE',
+        amount: 0,
+        idempotencyKey: 'charge:model:run-1',
+      }),
+    );
+  });
+
+  it('does not write a zero CHARGE when a CHARGE already exists', async () => {
+    mockTransaction.mockImplementation(async (fn: (tx: unknown) => Promise<unknown>) =>
+      fn(makeTx({ existingCharge: true })),
+    );
+    mockLedgerCreate.mockClear();
+    await CreditService.finalizeRunBilling('user-1', 'run-1', 10, 'openrouter/free');
+    expect(mockLedgerCreate).not.toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'CHARGE', amount: 0 }),
+    );
   });
 });
