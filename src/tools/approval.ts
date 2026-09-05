@@ -5,6 +5,11 @@ import { AppError } from '@/lib/errors';
 import { now } from '@/lib/temporal';
 import { db } from '@/prisma/db';
 import { AgentRunRepository } from '@/repositories/agentRun.repository';
+import { MessageRepository } from '@/repositories/message.repository';
+import {
+  parseContentBlocks,
+  setToolUseStatus,
+} from '@/agent/content';
 import type { ToolEmitPart } from './types';
 
 export const TOOL_APPROVAL_WAITPOINT_TYPE = 'tool_approval';
@@ -108,6 +113,20 @@ export async function completeToolApproval(opts: {
 
   const decision: ToolApprovalDecision = { approved: opts.approved };
   await wait.completeToken(invocation.waitpointToken, decision);
+
+  // Mark resumed immediately so message-list heal stops re-applying
+  // AWAITING_APPROVAL before the agent worker wakes up.
+  await markWaitpointResumed(invocation.waitpointToken, decision);
+
+  // Flip durable tool_use status so refetch no longer shows Approve/Reject.
+  const assistant = await MessageRepository.findAssistantMessageForRun(run.id);
+  if (assistant) {
+    const next = setToolUseStatus(parseContentBlocks(assistant.content), {
+      id: opts.toolCallId,
+      status: opts.approved ? 'RUNNING' : 'FAILED',
+    });
+    await MessageRepository.updateStreamingContent(assistant.id, next);
+  }
 
   return { approved: opts.approved, toolCallId: opts.toolCallId };
 }

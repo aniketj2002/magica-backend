@@ -19,9 +19,11 @@ import {
   appendToolResult,
   appendToolUse,
   assistantBlocksToProviderMessages,
+  markToolUseAwaitingApproval,
   mergeTextDelta,
   mergeThinkingDelta,
   parseContentBlocks,
+  setToolUseStatus,
   upsertUsage,
   type ContentBlock,
 } from './content';
@@ -386,7 +388,25 @@ async function runToolCalls(
       messageId: ctx.assistantMessageId,
       userId: ctx.run.userId,
       signal: args.signal,
-      emit: (part) => emit(args, part),
+      emit: async (part) => {
+        if (part.type === 'tool-approval-required') {
+          state.blocks = markToolUseAwaitingApproval(state.blocks, {
+            id: part.id,
+            credits: part.credits,
+          });
+          await checkpoint(ctx.assistantMessageId, state.blocks);
+        } else if (
+          part.type === 'tool-progress' &&
+          (part.status === 'RUNNING' || part.status === 'FAILED')
+        ) {
+          state.blocks = setToolUseStatus(state.blocks, {
+            id: part.id,
+            status: part.status,
+          });
+          await checkpoint(ctx.assistantMessageId, state.blocks);
+        }
+        await emit(args, part);
+      },
     });
 
     state.blocks = appendToolResult(state.blocks, {

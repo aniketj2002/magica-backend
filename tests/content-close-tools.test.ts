@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   closeOpenToolUses,
+  markToolUseAwaitingApproval,
   parseContentBlocks,
+  setToolUseStatus,
   type ContentBlock,
 } from '@/agent/content';
 
@@ -82,5 +84,74 @@ describe('closeOpenToolUses', () => {
       { content: { error: 'cancelled', message: 'Run cancelled' }, isError: true },
     );
     expect(parseContentBlocks(closed)).toEqual(closed);
+  });
+});
+
+describe('markToolUseAwaitingApproval', () => {
+  it('sets status and credits on the matching tool_use', () => {
+    const blocks: ContentBlock[] = [
+      { type: 'text', text: 'hi' },
+      {
+        type: 'tool_use',
+        id: 'call-1',
+        name: 'gpt_image_2',
+        input: { prompt: 'x' },
+      },
+    ];
+
+    const next = markToolUseAwaitingApproval(blocks, {
+      id: 'call-1',
+      credits: 2.5,
+    });
+
+    expect(next).toEqual([
+      { type: 'text', text: 'hi' },
+      {
+        type: 'tool_use',
+        id: 'call-1',
+        name: 'gpt_image_2',
+        input: { prompt: 'x' },
+        status: 'AWAITING_APPROVAL',
+        credits: 2.5,
+      },
+    ]);
+    expect(parseContentBlocks(next)).toEqual(next);
+  });
+
+  it('is a no-op when the tool id is missing', () => {
+    const blocks: ContentBlock[] = [
+      {
+        type: 'tool_use',
+        id: 'call-1',
+        name: 'gpt_image_2',
+        input: {},
+      },
+    ];
+    expect(markToolUseAwaitingApproval(blocks, { id: 'other' })).toBe(blocks);
+  });
+});
+
+describe('setToolUseStatus', () => {
+  it('replaces AWAITING_APPROVAL with RUNNING', () => {
+    const blocks: ContentBlock[] = [
+      {
+        type: 'tool_use',
+        id: 'call-1',
+        name: 'gpt_image_2',
+        input: {},
+        status: 'AWAITING_APPROVAL',
+        credits: 1,
+      },
+    ];
+    expect(setToolUseStatus(blocks, { id: 'call-1', status: 'RUNNING' })).toEqual([
+      {
+        type: 'tool_use',
+        id: 'call-1',
+        name: 'gpt_image_2',
+        input: {},
+        status: 'RUNNING',
+        credits: 1,
+      },
+    ]);
   });
 });

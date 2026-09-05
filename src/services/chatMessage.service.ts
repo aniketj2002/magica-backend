@@ -23,7 +23,12 @@ import {
 } from '@/trigger/queues';
 import { agentStream } from '@/trigger/streams';
 import type { agentRunTask } from '@/trigger/agent-run.task';
-import type { ContentBlock } from '@/agent/content';
+import {
+  markToolUseAwaitingApproval,
+  parseContentBlocks,
+  type ContentBlock,
+} from '@/agent/content';
+import { TOOL_APPROVAL_WAITPOINT_TYPE } from '@/tools/approval';
 
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 100;
@@ -79,7 +84,7 @@ export const ChatMessageService = {
         : null;
 
     return {
-      items: page.map(serializeMessage),
+      items: await serializeMessagesWithPendingApprovals(page),
       nextCursor,
     };
   },
@@ -280,7 +285,7 @@ function clampLimit(limit?: number): number {
   return Math.min(Math.max(1, Math.floor(limit)), MAX_LIMIT);
 }
 
-function serializeMessage(message: {
+type MessageRow = {
   id: string;
   chatId: string;
   userId: string;
@@ -291,7 +296,69 @@ function serializeMessage(message: {
   metadata: unknown;
   createdAt: unknown;
   updatedAt: unknown;
-}) {
+};
+
+/**
+ * Older checkpoints stored tool_use without AWAITING_APPROVAL. On list,
+ * overlay pending tool_approval waitpoints so reopen still shows Approve/Reject.
+ */
+async function serializeMessagesWithPendingApprovals(messages: MessageRow[]) {
+  const runIds = [
+    ...new Set(
+      messages
+        .filter(
+          (m) =>
+            m.role === 'ASSISTANT' &&
+            m.status === 'STREAMING' &&
+            Boolean(m.agentRunId),
+        )
+        .map((m) => m.agentRunId!),
+    ),
+  ];
+
+  if (runIds.length === 0) {
+    return messages.map(serializeMessage);
+  }
+
+  const waitpoints = await db.orm.public.Waitpoint.where({
+    type: TOOL_APPROVAL_WAITPOINT_TYPE,
+    status: 'PENDING',
+  })
+    .where((w) => w.agentRunId.in(runIds))
+    .all();
+
+  const byRunId = new Map<string, Array<{ toolCallId: string; credits?: number }>>();
+  for (const wp of waitpoints) {
+    const input = (wp.input ?? {}) as Record<string, unknown>;
+    const toolCallId =
+      typeof input.toolCallId === 'string' ? input.toolCallId : null;
+    if (!toolCallId) continue;
+    const credits =
+      typeof input.credits === 'number' ? input.credits : undefined;
+    const list = byRunId.get(wp.agentRunId) ?? [];
+    list.push({ toolCallId, credits });
+    byRunId.set(wp.agentRunId, list);
+  }
+
+  return messages.map((message) => {
+    const pending =
+      message.agentRunId && message.status === 'STREAMING'
+        ? byRunId.get(message.agentRunId)
+        : undefined;
+    if (!pending?.length) return serializeMessage(message);
+
+    let blocks = parseContentBlocks(message.content);
+    for (const p of pending) {
+      blocks = markToolUseAwaitingApproval(blocks, {
+        id: p.toolCallId,
+        credits: p.credits,
+      });
+    }
+    return serializeMessage({ ...message, content: blocks });
+  });
+}
+
+function serializeMessage(message: MessageRow) {
   return {
     id: message.id,
     chatId: message.chatId,

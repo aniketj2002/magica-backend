@@ -16,6 +16,9 @@ export const toolUseBlockSchema = z.object({
   id: z.string(),
   name: z.string(),
   input: z.unknown(),
+  /** FE UI hint (e.g. AWAITING_APPROVAL); stripped from provider replay. */
+  status: z.string().optional(),
+  credits: z.number().optional(),
 });
 
 export const toolResultBlockSchema = z.object({
@@ -247,6 +250,45 @@ export function appendToolUse(
       input,
     },
   ];
+}
+
+/**
+ * Persist approval UI state on the matching tool_use so reopen/reload can
+ * render Approve/Reject without relying on the ephemeral realtime stream.
+ */
+export function markToolUseAwaitingApproval(
+  blocks: ContentBlock[],
+  opts: { id: string; credits?: number },
+): ContentBlock[] {
+  let changed = false;
+  const next = blocks.map((block) => {
+    if (block.type !== 'tool_use' || block.id !== opts.id) return block;
+    changed = true;
+    return {
+      ...block,
+      status: 'AWAITING_APPROVAL',
+      ...(opts.credits !== undefined ? { credits: opts.credits } : {}),
+    };
+  });
+  return changed ? next : blocks;
+}
+
+/** Clear or replace tool_use.status after the user decides (or tool progresses). */
+export function setToolUseStatus(
+  blocks: ContentBlock[],
+  opts: { id: string; status: string | null },
+): ContentBlock[] {
+  let changed = false;
+  const next = blocks.map((block) => {
+    if (block.type !== 'tool_use' || block.id !== opts.id) return block;
+    changed = true;
+    if (opts.status === null) {
+      const { status: _status, credits: _credits, ...rest } = block;
+      return rest;
+    }
+    return { ...block, status: opts.status };
+  });
+  return changed ? next : blocks;
 }
 
 export function appendToolResult(

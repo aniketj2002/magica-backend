@@ -1,0 +1,100 @@
+{
+  "version": 1,
+  "fingerprint": "318d844a32513d41",
+  "recordedAt": "2026-09-05T11:27:45.574Z",
+  "updatedAt": "2026-09-05T11:41:28.379Z",
+  "steps": [
+    {
+      "op": "estimate-credits",
+      "method": "POST",
+      "path": "/v1/nodes/estimate-credits",
+      "requestBody": {
+        "nodes": [
+          {
+            "type": "gpt_image_2",
+            "data": {
+              "prompt": "a majestic mountain landscape"
+            },
+            "subModelId": "gpt-image-2-text"
+          }
+        ]
+      },
+      "status": 200,
+      "responseBody": {
+        "estimates": [
+          {
+            "microcredits": 210720
+          }
+        ]
+      },
+      "recordedAt": "2026-09-05T11:27:45.574Z"
+    },
+    {
+      "op": "run",
+      "method": "POST",
+      "path": "/v1/nodes/gpt_image_2/run",
+      "requestBody": {
+        "input": {
+          "prompt": "a majestic mountain landscape"
+        },
+        "subModelId": "gpt-image-2-text"
+      },
+      "status": 202,
+      "responseBody": {
+        "runId": "cmtob7zqk00kbjs04u8k8j0m3"
+      },
+      "recordedAt": "2026-09-05T11:38:56.232Z"
+    },
+    {
+      "op": "get-run",
+      "method": "GET",
+      "path": "/v1/nodes/runs/cmtob7zqk00kbjs04u8k8j0m3",
+      "status": 200,
+      "responseBody": {
+        "id": "cmtob7zqk00kbjs04u8k8j0m3",
+        "nodeType": "gpt_image_2",
+        "subModelId": "gpt-image-2-text",
+        "status": "COMPLETED",
+        "input": {
+          "n": 1,
+          "prompt": "a majestic mountain landscape",
+          "quality": "High",
+          "background": "Auto",
+          "output_format": "PNG",
+          "output_compression": 80
+        },
+        "output": {
+          "result": [
+            "https://g.tlcdn.com/gen/f4e1e0dd9ae640e2bfd3029af1d44fb1.png"
+          ],
+          "provider": "openai",
+          "creditUsed": 210720,
+          "resultMetadata": [
+            {
+              "size": 2967833,
+              "width": 1536,
+              "height": 1024,
+              "modelId": "gpt-image-2",
+              "mimeType": "image/png",
+              "mediaType": "image"
+            }
+          ]
+        },
+        "error": null,
+        "userMessage": null,
+        "creditUsed": 210720,
+        "triggerRunId": "run_06g72nagn4vikgqarvo2037n01",
+        "source": "api",
+        "createdAt": "2026-09-05T11:38:54.764Z"
+      },
+      "recordedAt": "2026-09-05T11:41:28.379Z"
+    }
+  ],
+  "chain": {
+    "nodeType": "gpt_image_2",
+    "subModelId": "gpt-image-2-text",
+    "input": {
+      "prompt": "a majestic mountain landscape"
+    }
+  }
+}

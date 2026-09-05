@@ -253,6 +253,12 @@ export async function executeTool(args: ExecuteToolArgs): Promise<ToolExecuteRes
       status: 'RUNNING',
       heartbeatAt: runStartedAt,
     });
+    await args.emit?.({
+      type: 'tool-progress',
+      id: args.toolCallId,
+      name: args.toolName,
+      status: 'RUNNING',
+    });
   } else {
     // Free tools — no approval, no balance hold (needed: 0 is a no-op).
     await CreditReservationService.ensureReservation({

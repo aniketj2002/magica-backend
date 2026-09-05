@@ -9,6 +9,8 @@ export {
   mergeThinkingDelta,
   appendToolUse,
   appendToolResult,
+  markToolUseAwaitingApproval,
+  setToolUseStatus,
   closeOpenToolUses,
   upsertUsage,
 } from './content';
