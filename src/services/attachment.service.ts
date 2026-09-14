@@ -10,6 +10,7 @@ import {
   createDirectUploadSignature,
   verifyTransloaditWebhookSignature,
 } from '@/providers/transloadit';
+import { UPLOAD_MAX_BYTES } from '@/lib/rate-limit';
 
 /** Object key from Transloadit store fields or a private R2 result URL. */
 function resolveStorageKey(
@@ -30,7 +31,7 @@ export type CreateAttachmentInput = {
   chatId: string;
   originalName: string;
   mimeType: string;
-  sizeBytes?: number;
+  sizeBytes: number;
 };
 
 function serializeAttachment(row: {
@@ -172,6 +173,15 @@ export async function applyAssembly(assembly: Record<string, unknown>): Promise<
     return { ok: true, failed: true as const, attachmentId };
   }
 
+  if (file.sizeBytes > UPLOAD_MAX_BYTES) {
+    await AttachmentRepository.markFailed(attachmentId, {
+      error: `File exceeds ${UPLOAD_MAX_BYTES} byte limit`,
+      assemblyId,
+      sizeBytes: file.sizeBytes,
+    });
+    return { ok: true, failed: true as const, attachmentId };
+  }
+
   const storageKey = file.storageKey
     ? file.storageKey.replace(/^\/+/, '')
     : null;
@@ -199,6 +209,13 @@ export async function applyAssembly(assembly: Record<string, unknown>): Promise<
 
 export const AttachmentService = {
   async createDirectUpload(input: CreateAttachmentInput) {
+    if (input.sizeBytes > UPLOAD_MAX_BYTES) {
+      throw AppError.validation(
+        `File exceeds ${UPLOAD_MAX_BYTES} byte limit`,
+        { sizeBytes: input.sizeBytes, maxBytes: UPLOAD_MAX_BYTES },
+      );
+    }
+
     const chat = await ChatRepository.findByIdForUser(input.chatId, input.userId);
     if (!chat) throw AppError.notFound();
 

@@ -22,6 +22,7 @@
     "@trigger.dev/sdk": "^4.5.16",
     "dotenv": "^17.4.2",
     "next": "16.3.4",
+    "redis": "^6.2.1",
     "svix": "^2.3.0",
     "transloadit": "^4.11.1",
     "zod": "^4.5.4"

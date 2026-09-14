@@ -26,6 +26,24 @@ const envSchema = z.object({
   /** Directory for Magica VCR fixtures (default: fixtures/magica). */
   MAGICA_VCR_DIR: z.string().min(1).optional(),
   APP_PUBLIC_URL: z.string().url().optional(),
+  /** Redis for hybrid rate limiting (user pace + global leaky bucket). */
+  REDIS_URL: z.string().min(1),
+  /** Max requests per user per minute (chat and upload each). */
+  RATE_LIMIT_USER_MAX_PER_MINUTE: z.coerce.number().int().positive().default(2),
+  /** Shared leaky-bucket capacity per bucket (chat | upload). */
+  RATE_LIMIT_GLOBAL_CAPACITY: z.coerce.number().int().positive().default(10),
+  /** Tokens refilled into each global bucket per hour. */
+  RATE_LIMIT_GLOBAL_REFILL_PER_HOUR: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(10),
+  /** Hard cap for direct uploads (bytes). Default 5 MiB. */
+  UPLOAD_MAX_BYTES: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(5 * 1024 * 1024),
   TRANSLOADIT_AUTH_KEY: z.string().min(1).optional(),
   TRANSLOADIT_AUTH_SECRET: z.string().min(1).optional(),
   /** Template credential name registered in Transloadit for R2 (/cloudflare/store). */
@@ -141,5 +159,14 @@ function buildEnv(): Env {
   };
 }
 
+let _env: Env | undefined;
+
 /** Zod-validated process.env. Parsed once on first access (fails fast). */
-export const env: Env = buildEnv();
+export const env: Env = new Proxy({} as Env, {
+  get(_, prop) {
+    if (!_env) {
+      _env = buildEnv();
+    }
+    return _env[prop as keyof Env];
+  },
+});

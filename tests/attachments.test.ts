@@ -71,7 +71,15 @@ describe('createDirectUploadSignature', () => {
     expect(a.params).toBe(b.params);
     expect(a.signature.startsWith('sha384:')).toBe(true);
     expect(a.parsed.notify_url).toContain('/api/webhooks/transloadit');
+    expect(a.parsed.max_size).toBe(5 * 1024 * 1024);
+    expect(a.parsed.steps.filter_size).toMatchObject({
+      robot: '/file/filter',
+      use: ':original',
+      declines: [['${file.size}', '>', '5mb']],
+      error_on_decline: true,
+    });
     expect(a.parsed.steps.store.robot).toBe('/cloudflare/store');
+    expect(a.parsed.steps.store.use).toBe('filter_size');
     expect(a.parsed.steps.store.result).toBe(true);
     expect(a.parsed.steps.store.path).toContain('attachments/user-1/att-1/');
   });
@@ -113,6 +121,23 @@ describe('verifyTransloaditWebhookSignature', () => {
 
   it('rejects a missing signature', () => {
     expect(verifyTransloaditWebhookSignature(payload, null)).toBe(false);
+  });
+});
+
+describe('AttachmentService.createDirectUpload', () => {
+  it('rejects sizeBytes over 5 MiB with validation_error', async () => {
+    await expect(
+      AttachmentService.createDirectUpload({
+        userId: 'user-1',
+        chatId: '00000000-0000-4000-8000-000000000001',
+        originalName: 'huge.bin',
+        mimeType: 'application/octet-stream',
+        sizeBytes: 5 * 1024 * 1024 + 1,
+      }),
+    ).rejects.toMatchObject({
+      code: 'validation_error',
+      status: 422,
+    } satisfies Partial<AppError>);
   });
 });
 
@@ -256,6 +281,40 @@ describe('AttachmentService.handleWebhook', () => {
     expect(result).toMatchObject({ ok: true, failed: true, attachmentId: 'att-1' });
     expect(mockMarkCompleted).not.toHaveBeenCalled();
     expect(mockMarkFailed).toHaveBeenCalled();
+  });
+
+  it('marks FAILED when store result exceeds 5 MiB', async () => {
+    const assembly = {
+      ok: 'ASSEMBLY_COMPLETED',
+      assembly_id: 'asm_1',
+      fields: { attachmentId: 'att-1' },
+      results: {
+        store: [
+          {
+            ssl_url: 'https://media.test.local/attachments/user-1/att-1/huge.bin',
+            size: 5 * 1024 * 1024 + 1,
+            mime: 'application/octet-stream',
+            path: 'attachments/user-1/att-1/huge.bin',
+          },
+        ],
+      },
+    };
+    const payload = JSON.stringify(assembly);
+    const signature = signPayload(payload);
+
+    const result = await AttachmentService.handleWebhook({
+      transloaditPayload: payload,
+      signature,
+    });
+
+    expect(result).toMatchObject({ ok: true, failed: true, attachmentId: 'att-1' });
+    expect(mockMarkCompleted).not.toHaveBeenCalled();
+    expect(mockMarkFailed).toHaveBeenCalledWith(
+      'att-1',
+      expect.objectContaining({
+        sizeBytes: 5 * 1024 * 1024 + 1,
+      }),
+    );
   });
 
   it('rejects an invalid signature with unauthorized', async () => {
