@@ -1,6 +1,7 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { Transloadit } from 'transloadit';
 import { env } from '@/lib/env';
+import { UPLOAD_MAX_BYTES } from '@/lib/rate-limit';
 
 export type DirectUploadParams = {
   auth: {
@@ -8,13 +9,22 @@ export type DirectUploadParams = {
     expires: string;
   };
   notify_url: string;
+  /** Assembly-wide upload size cap (bytes). */
+  max_size: number;
   fields: {
     attachmentId: string;
   };
   steps: {
+    filter_size: {
+      robot: '/file/filter';
+      use: ':original';
+      declines: [string, string, string][];
+      error_on_decline: true;
+      error_msg: string;
+    };
     store: {
       robot: '/cloudflare/store';
-      use: ':original';
+      use: 'filter_size';
       credentials: string;
       path: string;
       /** Include store results (ssl_url / path) in assembly JSON. */
@@ -50,13 +60,21 @@ export function createDirectUploadSignature(opts: {
         new Date(Date.now() + 60 * 60 * 1000).toISOString(),
     },
     notify_url: `${env.APP_PUBLIC_URL.replace(/\/$/, '')}/api/webhooks/transloadit`,
+    max_size: UPLOAD_MAX_BYTES,
     fields: {
       attachmentId: opts.attachmentId,
     },
     steps: {
+      filter_size: {
+        robot: '/file/filter',
+        use: ':original',
+        declines: [['${file.size}', '>', '5mb']],
+        error_on_decline: true,
+        error_msg: 'File must be 5 MiB or smaller',
+      },
       store: {
         robot: '/cloudflare/store',
-        use: ':original',
+        use: 'filter_size',
         credentials: auth.r2Credentials,
         path: `attachments/${opts.userId}/${opts.attachmentId}/\${file.url_name}`,
         result: true,

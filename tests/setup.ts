@@ -2,6 +2,7 @@
  * Ensure required env vars exist before modules that parse env at import time.
  */
 process.env.DATABASE_URL ??= 'postgresql://user:password@localhost:5432/mydb';
+process.env.REDIS_URL ??= 'redis://localhost:6379';
 process.env.CLERK_SECRET_KEY ??= 'sk_test_vitest';
 process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ??= 'pk_test_vitest';
 process.env.OPENROUTER_API_KEY ??= 'sk-or-vitest';

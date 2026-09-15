@@ -56,6 +56,13 @@ export class AppError extends Error {
     return new AppError('payment_required', 402, message);
   }
 
+  static tooManyRequests(
+    message = 'Too many requests, Rate limit exceeded',
+    details?: unknown,
+  ): AppError {
+    return new AppError('rate_limit_exceeded', 429, message, details);
+  }
+
   static internal(message = 'Internal server error', details?: unknown): AppError {
     return new AppError('internal_error', 500, message, details);
   }

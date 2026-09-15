@@ -1,6 +1,11 @@
 import { z } from 'zod';
-import { withRoute, jsonOk } from '@/lib/http';
+import { withRoute, jsonOk, jsonError } from '@/lib/http';
 import { ChatMessageService } from '@/services/chatMessage.service';
+import {
+  consume,
+  rateLimitExceededError,
+  rateLimitHeaders,
+} from '@/lib/rate-limit';
 
 export const maxDuration = 60;
 
@@ -39,6 +44,13 @@ export const GET = withRoute(
 export const POST = withRoute(
   { params: paramsSchema, body: sendBodySchema },
   async ({ request, user, params, body }) => {
+    const rl = await consume(user!.id, 'chat');
+    if (!rl.allowed) {
+      return jsonError(rateLimitExceededError(rl), {
+        headers: rateLimitHeaders(rl),
+      });
+    }
+
     const idempotencyKey = request.headers.get('Idempotency-Key');
     const result = await ChatMessageService.sendMessage({
       chatId: params.chatId,
@@ -48,6 +60,9 @@ export const POST = withRoute(
       idempotencyKey,
       attachmentIds: body.attachmentIds,
     });
-    return jsonOk(result, { status: 201 });
+    return jsonOk(result, {
+      status: 201,
+      headers: rateLimitHeaders(rl),
+    });
   },
 );
